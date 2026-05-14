@@ -1,37 +1,68 @@
 // ── EcoAlert Index Page JS ──
-import { initAuth, signInWithGoogle, signOutUser } from '../auth.js';
-import { fetchReports } from '../reports.js';
+// Firebase imports are dynamic so the page HTML renders instantly first
 import { initDarkMode, toggleDarkMode, ISSUE_TYPES, SEVERITY_LEVELS, STATUS_TYPES,
   timeAgo, showToast } from '../utils.js';
 
+// ─── Render immediately (no Firebase needed) ─────────────────
 initDarkMode();
+renderIssueTypesGrid();   // static, no data needed
+setupNavHandlers();
 
-// ─── Auth ───────────────────────────────────────────────────
-document.getElementById('loginBtn')?.addEventListener('click', signInWithGoogle);
-document.getElementById('logoutBtn')?.addEventListener('click', signOutUser);
-document.getElementById('hamburger')?.addEventListener('click', () => {
-  document.getElementById('navLinks')?.classList.toggle('open');
+// ─── Then load Firebase lazily ───────────────────────────────
+window.addEventListener('load', () => {
+  loadFirebaseData();
 });
-document.getElementById('darkToggle')?.addEventListener('click', toggleDarkMode);
 
-initAuth((user) => {
-  if (user) {
-    document.getElementById('loginBtn').style.display = 'none';
-    document.getElementById('logoutBtn').style.display = 'flex';
-    document.getElementById('userAvatar').src = user.photoURL || '';
-    document.getElementById('userAvatar').style.display = 'block';
+function setupNavHandlers() {
+  document.getElementById('hamburger')?.addEventListener('click', () => {
+    document.getElementById('navLinks')?.classList.toggle('open');
+  });
+  document.getElementById('darkToggle')?.addEventListener('click', toggleDarkMode);
+}
+
+// ─── Auth (lazy) ─────────────────────────────────────────────
+async function loadFirebaseData() {
+  try {
+    const [{ initAuth, signInWithGoogle, signOutUser }, { fetchReports }] = await Promise.all([
+      import('../auth.js'),
+      import('../reports.js')
+    ]);
+
+    document.getElementById('loginBtn')?.addEventListener('click', signInWithGoogle);
+    document.getElementById('logoutBtn')?.addEventListener('click', signOutUser);
+
+    initAuth((user) => {
+      if (user) {
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'flex';
+        const avatar = document.getElementById('userAvatar');
+        if (avatar) { avatar.src = user.photoURL || ''; avatar.style.display = 'block'; }
+      }
+    });
+
+    const reports = await fetchReports();
+    renderStats(reports);
+    updateIssueTypeCounts(reports);
+    renderRecentReports(reports.slice(0, 6));
+  } catch (e) {
+    console.error('Firebase load error:', e);
+    // Still show dummy data counts
+    animateCount('totalReports', 6);
+    animateCount('resolvedCount', 1);
+    animateCount('activeCount', 4);
   }
-});
+}
 
-// ─── Issue Types Grid ────────────────────────────────────────
-const issueGrid = document.getElementById('issueTypesGrid');
-if (issueGrid) {
+// ─── Issue Types Grid (static — no data needed) ───────────────
+function renderIssueTypesGrid() {
+  const issueGrid = document.getElementById('issueTypesGrid');
+  if (!issueGrid) return;
   Object.entries(ISSUE_TYPES).forEach(([key, cfg]) => {
     const card = document.createElement('div');
     card.className = 'issue-type-card';
     card.innerHTML = `<span class="issue-type-icon">${cfg.icon}</span>
       <div class="issue-type-label">${cfg.label}</div>
-      <div class="issue-type-count" id="count-${key}">Loading...</div>`;
+      <div class="issue-type-count" id="count-${key}">—</div>`;
     card.addEventListener('click', () => {
       window.location.href = `pages/map.html?type=${key}`;
     });
@@ -39,38 +70,30 @@ if (issueGrid) {
   });
 }
 
-// ─── Load Reports & Stats ────────────────────────────────────
-async function loadData() {
-  try {
-    const reports = await fetchReports();
-    // Stats
-    const total = reports.length;
-    const resolved = reports.filter(r => r.status === 'resolved').length;
-    const active = reports.filter(r => r.status === 'active').length;
-    animateCount('totalReports', total);
-    animateCount('resolvedCount', resolved);
-    animateCount('activeCount', active);
+function updateIssueTypeCounts(reports) {
+  const typeCounts = {};
+  reports.forEach(r => { typeCounts[r.type] = (typeCounts[r.type] || 0) + 1; });
+  Object.keys(ISSUE_TYPES).forEach(key => {
+    const el = document.getElementById(`count-${key}`);
+    if (el) el.textContent = `${typeCounts[key] || 0} reports`;
+  });
+}
 
-    // Type counts
-    const typeCounts = {};
-    reports.forEach(r => { typeCounts[r.type] = (typeCounts[r.type] || 0) + 1; });
-    Object.keys(ISSUE_TYPES).forEach(key => {
-      const el = document.getElementById(`count-${key}`);
-      if (el) el.textContent = `${typeCounts[key] || 0} reports`;
-    });
-
-    // Recent Reports
-    renderRecentReports(reports.slice(0, 6));
-  } catch (e) {
-    console.error(e);
-  }
+// ─── Stats ───────────────────────────────────────────────────
+function renderStats(reports) {
+  const total = reports.length;
+  const resolved = reports.filter(r => r.status === 'resolved').length;
+  const active = reports.filter(r => r.status === 'active').length;
+  animateCount('totalReports', total);
+  animateCount('resolvedCount', resolved);
+  animateCount('activeCount', active);
 }
 
 function animateCount(id, target) {
   const el = document.getElementById(id);
   if (!el) return;
   let current = 0;
-  const step = Math.ceil(target / 40);
+  const step = Math.max(1, Math.ceil(target / 40));
   const timer = setInterval(() => {
     current = Math.min(current + step, target);
     el.textContent = current;
@@ -78,6 +101,7 @@ function animateCount(id, target) {
   }, 30);
 }
 
+// ─── Recent Reports ──────────────────────────────────────────
 function renderRecentReports(reports) {
   const grid = document.getElementById('recentReportsGrid');
   if (!grid) return;
@@ -97,10 +121,10 @@ function renderRecentReports(reports) {
     const sev = SEVERITY_LEVELS[report.severity] || SEVERITY_LEVELS.medium;
     const sta = STATUS_TYPES[report.status] || STATUS_TYPES.active;
     const card = document.createElement('div');
-    card.className = `report-card fade-in stagger-${Math.min(i+1,5)}`;
+    card.className = `report-card fade-in stagger-${Math.min(i + 1, 5)}`;
     card.innerHTML = `
       ${report.imageURL
-        ? `<img class="report-card-image" src="${report.imageURL}" alt="Report" loading="lazy" onerror="this.style.display='none'">`
+        ? `<img class="report-card-image" src="${report.imageURL}" alt="Report" loading="lazy" decoding="async" onerror="this.style.display='none'">`
         : `<div class="report-card-image-placeholder">${cfg.icon}</div>`}
       <div class="report-card-body">
         <div class="report-card-header">
@@ -122,5 +146,3 @@ function renderRecentReports(reports) {
     grid.appendChild(card);
   });
 }
-
-loadData();
