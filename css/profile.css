@@ -1,0 +1,34 @@
+/* ── Profile Page Styles ── */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 20px;
+  padding: 28px;
+}
+.profile-avatar-wrap { position: relative; flex-shrink: 0; }
+.profile-photo { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-green); }
+.profile-badge { position: absolute; bottom: 0; right: 0; font-size: 1.3rem; background: var(--bg-card); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--border-glass); }
+.profile-info { flex: 1; }
+.profile-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+.profile-email { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px; }
+.profile-joined { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px; }
+.profile-role-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; background: rgba(45,122,45,0.12); color: var(--accent-green); }
+
+.badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 12px; }
+.badge-item { text-align: center; padding: 16px 8px; border-radius: var(--radius-md); background: var(--bg-glass-2); border: 1px solid var(--border-glass); transition: transform var(--transition); }
+.badge-item:hover { transform: translateY(-3px); }
+.badge-item.locked { opacity: 0.35; filter: grayscale(1); }
+.badge-emoji { font-size: 2rem; display: block; margin-bottom: 6px; }
+.badge-name { font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); }
+.badge-desc { font-size: 0.62rem; color: var(--text-muted); margin-top: 3px; line-height: 1.3; }
+
+.my-report-item { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: var(--radius-md); background: var(--bg-glass-2); border: 1px solid var(--border-subtle); margin-bottom: 10px; transition: all var(--transition); cursor: pointer; }
+.my-report-item:hover { border-color: var(--accent-green); background: rgba(45,122,45,0.04); }
+.mri-thumb { width: 64px; height: 64px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; background: var(--bg-glass-2); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+.mri-info { flex: 1; }
+.mri-type { font-size: 0.75rem; font-weight: 700; color: var(--accent-green); margin-bottom: 4px; }
+.mri-desc { font-size: 0.83rem; color: var(--text-primary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.mri-meta { display: flex; gap: 10px; margin-top: 6px; font-size: 0.72rem; color: var(--text-muted); flex-wrap: wrap; }
+
+@media (max-width: 480px) { .profile-header { flex-direction: column; text-align: center; } }

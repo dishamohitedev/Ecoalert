@@ -1,0 +1,67 @@
+/* ── Admin Page Styles ── */
+
+.admin-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+.admin-header-actions { display: flex; align-items: center; gap: 12px; }
+.admin-live-indicator { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 600; color: var(--accent-green); padding: 6px 14px; background: rgba(45,122,45,0.1); border-radius: 100px; border: 1px solid rgba(45,122,45,0.2); }
+.live-dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; animation: pulse-dot 1.5s infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(1.4);} }
+
+/* Admin Report Card */
+.admin-report-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: var(--bg-glass-2);
+  transition: all var(--transition);
+}
+.admin-report-card:hover { border-color: var(--border-glass); box-shadow: var(--shadow-sm); }
+.admin-report-card.critical-card { border-left: 4px solid #B71C1C; }
+.admin-report-card.high-card { border-left: 4px solid #F44336; }
+
+.arc-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
+.arc-type-icon { font-size: 1.4rem; flex-shrink: 0; }
+.arc-info { flex: 1; min-width: 0; }
+.arc-title { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.arc-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.arc-badges { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; flex-shrink: 0; }
+.arc-actions { display: flex; gap: 6px; padding: 0 16px 14px; flex-wrap: wrap; }
+
+.admin-action-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border-glass);
+  font-family: var(--font-body);
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.admin-action-btn:hover { background: var(--bg-glass-2); }
+.admin-action-btn.resolve { color: #4CAF50; border-color: rgba(76,175,80,0.3); }
+.admin-action-btn.resolve:hover { background: rgba(76,175,80,0.1); }
+.admin-action-btn.progress { color: #FF9800; border-color: rgba(255,152,0,0.3); }
+.admin-action-btn.progress:hover { background: rgba(255,152,0,0.1); }
+.admin-action-btn.delete { color: #F44336; border-color: rgba(244,67,54,0.3); }
+.admin-action-btn.delete:hover { background: rgba(244,67,54,0.1); }
+
+.arc-image { width: 100%; max-height: 180px; object-fit: cover; display: block; border-top: 1px solid var(--border-subtle); }
+.arc-detail { padding: 0 16px 14px; display: flex; gap: 16px; flex-wrap: wrap; }
+.arc-detail-item { font-size: 0.75rem; }
+.arc-detail-label { color: var(--text-muted); margin-right: 4px; }
+.arc-detail-val { font-weight: 600; color: var(--text-secondary); }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 9000; display: flex; align-items: center; justify-content: center; }
+.modal { max-width: 400px; width: calc(100% - 40px); padding: 32px; }
+.modal-title { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin-bottom: 12px; }
+.modal-body { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin-bottom: 24px; }
+.modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+
+.table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+.table-filters { display: flex; gap: 8px; flex-wrap: wrap; }

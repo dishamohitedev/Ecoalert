@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Map — EcoAlert</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/map.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+</head>
+<body>
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <a href="../index.html" class="nav-logo"><span class="logo-leaf">🌿</span> EcoAlert</a>
+    <button class="hamburger" id="hamburger">☰</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="../index.html"><span class="nav-icon">🏠</span> Home</a></li>
+      <li><a href="map.html" class="active"><span class="nav-icon">🗺️</span> Map</a></li>
+      <li><a href="report.html"><span class="nav-icon">📢</span> Report</a></li>
+      <li><a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a></li>
+      <li><a href="profile.html" class="auth-required"><span class="nav-icon">👤</span> Profile</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="dark-mode-toggle" id="darkToggle">🌙</button>
+      <img class="user-avatar" id="userAvatar" src="" alt="" />
+      <button class="btn btn-sm btn-login" id="loginBtn">Sign In</button>
+      <button class="btn btn-sm btn-logout" id="logoutBtn">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="map-page-layout">
+    <!-- ── Sidebar ── -->
+    <aside class="map-sidebar" id="mapSidebar">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">🗺️ Live Reports</h2>
+        <button class="sidebar-close" id="sidebarClose">✕</button>
+      </div>
+
+      <!-- Stats strip -->
+      <div class="map-stats-strip" id="mapStatsStrip">
+        <div class="map-stat"><span class="map-stat-num" id="msTotal">—</span><span class="map-stat-lbl">Total</span></div>
+        <div class="map-stat"><span class="map-stat-num active-color" id="msActive">—</span><span class="map-stat-lbl">Active</span></div>
+        <div class="map-stat"><span class="map-stat-num warning-color" id="msProgress">—</span><span class="map-stat-lbl">In Progress</span></div>
+        <div class="map-stat"><span class="map-stat-num success-color" id="msResolved">—</span><span class="map-stat-lbl">Resolved</span></div>
+      </div>
+
+      <!-- Filters -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Filters</div>
+        <div class="filter-row">
+          <select class="filter-select w-full" id="filterType">
+            <option value="">All Types</option>
+            <option value="garbage">🗑️ Garbage Dump</option>
+            <option value="waterlogging">💧 Waterlogging</option>
+            <option value="smell">😷 Bad Smell</option>
+            <option value="air">🌫️ Air Pollution</option>
+            <option value="drainage">🚰 Open Drainage</option>
+            <option value="road">⚠️ Unsafe Road</option>
+            <option value="smoke">🏭 Smoke Pollution</option>
+          </select>
+        </div>
+        <div class="filter-row">
+          <select class="filter-select w-full" id="filterSeverity">
+            <option value="">All Severities</option>
+            <option value="low">🟢 Low</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="high">🔴 High</option>
+            <option value="critical">🚨 Critical</option>
+          </select>
+        </div>
+        <div class="filter-row">
+          <select class="filter-select w-full" id="filterStatus">
+            <option value="">All Statuses</option>
+            <option value="active">🔴 Active</option>
+            <option value="in-progress">🟡 In Progress</option>
+            <option value="resolved">🟢 Resolved</option>
+          </select>
+        </div>
+        <button class="btn btn-ghost btn-sm w-full mt-2" id="clearFilters">Clear Filters</button>
+      </div>
+
+      <!-- Map Tools -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Map Tools</div>
+        <div class="map-tools">
+          <button class="map-tool-btn" id="locateMe" title="Find my location">📍 Locate Me</button>
+          <button class="map-tool-btn" id="toggleHeatmap" title="Toggle heatmap">🔥 Heatmap</button>
+          <button class="map-tool-btn" id="nearbyAlerts" title="Check nearby alerts">🔔 Nearby</button>
+        </div>
+      </div>
+
+      <!-- Report List -->
+      <div class="sidebar-section sidebar-reports">
+        <div class="sidebar-section-title flex justify-between items-center">
+          <span>Reports <span class="report-count-badge" id="reportCountBadge">0</span></span>
+        </div>
+        <div class="sidebar-report-list" id="sidebarReportList">
+          <div class="loading-centered"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Map Container ── -->
+    <div class="map-main">
+      <div id="mainMap"></div>
+
+      <!-- Mobile toggle -->
+      <button class="map-sidebar-toggle" id="sidebarToggle">☰ Reports</button>
+
+      <!-- Map overlay controls -->
+      <div class="map-overlay-controls">
+        <a href="report.html" class="map-report-fab" title="Report new issue">
+          <span>📢</span>
+          <span class="fab-label">Report Issue</span>
+        </a>
+      </div>
+
+      <!-- Nearby Alert Banner -->
+      <div class="nearby-banner" id="nearbyBanner" style="display:none">
+        <span class="nearby-icon">⚠️</span>
+        <span id="nearbyBannerText">Loading nearby alerts...</span>
+        <button class="nearby-close" onclick="document.getElementById('nearbyBanner').style.display='none'">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/pages/map-page.js"></script>
+</body>
+</html>

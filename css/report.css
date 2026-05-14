@@ -1,0 +1,136 @@
+/* ── EcoAlert Report Page Styles ── */
+
+.report-form { padding: 32px; max-width: 640px; margin: 0 auto; }
+
+/* Step Indicator */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32px;
+  gap: 0;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color var(--transition);
+  white-space: nowrap;
+}
+.step span {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--bg-glass-2);
+  border: 2px solid var(--border-glass);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all var(--transition);
+}
+.step.active { color: var(--accent-green); }
+.step.active span { background: var(--accent-green); border-color: var(--accent-green); color: white; }
+.step.done span { background: var(--accent-lime); border-color: var(--accent-lime); color: white; }
+.step-line { flex: 1; height: 2px; background: var(--border-glass); margin: 0 8px; }
+
+/* Form Steps */
+.step-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+}
+
+.char-count { text-align: right; font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+
+/* Issue Type Picker */
+.issue-type-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.type-option {
+  padding: 12px 8px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-glass);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  background: var(--bg-glass-2);
+}
+.type-option:hover { border-color: var(--accent-green); background: rgba(45,122,45,0.06); transform: translateY(-2px); }
+.type-option.selected { border-color: var(--accent-green); background: rgba(45,122,45,0.12); }
+.type-option .type-icon { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+.type-option .type-name { font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); line-height: 1.2; }
+
+/* Location */
+.location-actions { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.location-status {
+  font-size: 0.82rem;
+  color: var(--accent-green);
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.location-map-container {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  margin-top: 12px;
+  border: 1px solid var(--border-glass);
+}
+#reportMap { height: 280px; width: 100%; }
+.map-hint {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border-glass);
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  pointer-events: none;
+  z-index: 500;
+  white-space: nowrap;
+}
+
+/* Summary */
+.report-summary { margin-top: 20px; padding: 20px; }
+.summary-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; margin-bottom: 14px; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.summary-item { background: var(--bg-glass-2); padding: 10px 14px; border-radius: var(--radius-sm); }
+.summary-item-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); font-weight: 700; margin-bottom: 3px; }
+.summary-item-value { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+
+/* Step nav */
+.step-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; gap: 12px; }
+
+/* Success */
+.report-success {
+  text-align: center;
+  padding: 48px 24px;
+}
+.success-animation { font-size: 4rem; margin-bottom: 20px; animation: bounceIn 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes bounceIn { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: scale(1); } }
+.report-success h2 { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; margin-bottom: 12px; }
+.report-success p { color: var(--text-secondary); margin-bottom: 28px; max-width: 340px; margin-left: auto; margin-right: auto; }
+.success-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* Auth gate */
+.auth-gate { margin-top: 32px; }
+
+@media (max-width: 640px) {
+  .report-form { padding: 20px; }
+  .summary-grid { grid-template-columns: 1fr; }
+  .issue-type-picker { grid-template-columns: repeat(3, 1fr); }
+}
