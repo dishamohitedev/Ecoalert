@@ -1,184 +1,203 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EcoAlert — Pollution & Unsafe Area Reporting</title>
-  <meta name="description" content="Report polluted and unsafe areas in your city. Help your community stay safe." />
-  <!-- Fonts: preconnect first so DNS+TLS is resolved before request -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="dns-prefetch" href="https://www.gstatic.com" />
-  <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" />
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="css/main.css" />
-  <link rel="stylesheet" href="css/index.css" />
-</head>
-<body>
-  <!-- ── Navbar ── -->
-  <nav class="navbar">
-    <a href="index.html" class="nav-logo"><span class="logo-leaf">🌿</span> EcoAlert</a>
-    <button class="hamburger" id="hamburger" aria-label="Toggle menu">☰</button>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="index.html" class="active"><span class="nav-icon">🏠</span> Home</a></li>
-      <li><a href="pages/map.html"><span class="nav-icon">🗺️</span> Map</a></li>
-      <li><a href="pages/report.html"><span class="nav-icon">📢</span> Report</a></li>
-      <li><a href="pages/dashboard.html"><span class="nav-icon">📊</span> Dashboard</a></li>
-      <li><a href="pages/profile.html" class="auth-required"><span class="nav-icon">👤</span> Profile</a></li>
-      <li><a href="pages/admin.html" class="auth-required" id="adminNavLink" style="display:none"><span class="nav-icon">🛡️</span> Admin</a></li>
-    </ul>
-    <div class="nav-actions">
-      <button class="dark-mode-toggle" id="darkToggle" title="Toggle dark mode">🌙</button>
-      <img class="user-avatar" id="userAvatar" src="" alt="User" />
-      <button class="btn btn-sm btn-login" id="loginBtn">Sign In</button>
-      <button class="btn btn-sm btn-logout" id="logoutBtn">Sign Out</button>
-    </div>
-  </nav>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoAlert — Pollution & Unsafe Area Reporting</title>
+    <meta
+      name="description"
+      content="Report polluted and unsafe areas in your city. Help your community stay safe."
+    />
+    <!-- Fonts: preconnect first so DNS+TLS is resolved before request -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://www.gstatic.com" />
+    <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+    />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/index.css" />
+  </head>
+  <body>
+    <!-- ── Navbar ── -->
+    <nav class="navbar">
+      <a href="index.html" class="nav-logo"
+        ><span class="logo-leaf">🌿</span> EcoAlert</a
+      >
+      <div class="nav-actions" style="margin-left: auto">
+        <button
+          class="dark-mode-toggle"
+          id="darkToggle"
+          title="Toggle dark mode"
+        >
+          🌙
+        </button>
+        <button class="btn btn-sm btn-login" id="loginBtn">Sign In</button>
+        <button class="btn btn-sm btn-logout" id="logoutBtn">Sign Out</button>
+      </div>
+    </nav>
 
-  <div class="page-wrapper">
-    <!-- ── Hero ── -->
-    <section class="hero">
-      <div class="hero-bg-orbs">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-      </div>
-      <div class="container hero-content">
-        <div class="hero-badge fade-in">🌍 Community-Powered Reporting</div>
-        <h1 class="hero-title slide-up stagger-1">
-          Make Your City<br /><span class="gradient-text">Cleaner & Safer</span>
-        </h1>
-        <p class="hero-subtitle slide-up stagger-2">
-          Report pollution, garbage dumps, unsafe roads, and more. Together we build a cleaner community — one report at a time.
-        </p>
-        <div class="hero-actions slide-up stagger-3">
-          <a href="pages/report.html" class="btn btn-primary btn-lg">
-            <span>📢</span> Report an Issue
-          </a>
-          <a href="pages/map.html" class="btn btn-ghost btn-lg">
-            <span>🗺️</span> View Live Map
-          </a>
+    <div class="page-wrapper">
+      <!-- ── Hero ── -->
+      <section class="hero">
+        <div class="hero-bg-orbs">
+          <div class="orb orb-1"></div>
+          <div class="orb orb-2"></div>
+          <div class="orb orb-3"></div>
         </div>
-        <div class="hero-stats slide-up stagger-4">
-          <div class="hero-stat">
-            <span class="hero-stat-num" id="totalReports">—</span>
-            <span class="hero-stat-label">Reports Filed</span>
+        <div class="container hero-content">
+          <div class="hero-badge fade-in">🌍 Community-Powered Reporting</div>
+          <h1 class="hero-title slide-up stagger-1">
+            Make Your City<br /><span class="gradient-text"
+              >Cleaner & Safer</span
+            >
+          </h1>
+          <p class="hero-subtitle slide-up stagger-2">
+            Report pollution, garbage dumps, unsafe roads, and more. Together we
+            build a cleaner community — one report at a time.
+          </p>
+          <div class="hero-actions slide-up stagger-3">
+            <a href="pages/report.html" class="btn btn-primary btn-lg">
+              <span>📢</span> Report an Issue
+            </a>
+            <a href="pages/map.html" class="btn btn-ghost btn-lg">
+              <span>🗺️</span> View Live Map
+            </a>
           </div>
-          <div class="hero-stat-divider"></div>
-          <div class="hero-stat">
-            <span class="hero-stat-num" id="resolvedCount">—</span>
-            <span class="hero-stat-label">Issues Resolved</span>
-          </div>
-          <div class="hero-stat-divider"></div>
-          <div class="hero-stat">
-            <span class="hero-stat-num" id="activeCount">—</span>
-            <span class="hero-stat-label">Active Alerts</span>
-          </div>
-        </div>
-      </div>
-      <div class="hero-scroll-hint">
-        <span>Scroll to explore</span>
-        <div class="scroll-arrow">↓</div>
-      </div>
-    </section>
-
-    <!-- ── Issue Types ── -->
-    <section class="section-issues">
-      <div class="container">
-        <div class="section-header text-center">
-          <h2 class="section-title">What Can You Report?</h2>
-          <p class="section-subtitle">7 categories covering all major environmental hazards</p>
-        </div>
-        <div class="issue-types-grid" id="issueTypesGrid"></div>
-      </div>
-    </section>
-
-    <!-- ── Recent Reports ── -->
-    <section class="section-recent">
-      <div class="container">
-        <div class="section-header flex justify-between items-center">
-          <div>
-            <h2 class="section-title">Recent Reports</h2>
-            <p class="section-subtitle">Latest community alerts near you</p>
-          </div>
-          <a href="pages/map.html" class="btn btn-ghost btn-sm">View All →</a>
-        </div>
-        <div class="reports-grid" id="recentReportsGrid">
-          <!-- skeleton -->
-          <div class="report-card-skeleton"></div>
-          <div class="report-card-skeleton"></div>
-          <div class="report-card-skeleton"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── How It Works ── -->
-    <section class="section-how">
-      <div class="container">
-        <div class="section-header text-center">
-          <h2 class="section-title">How EcoAlert Works</h2>
-          <p class="section-subtitle">Three simple steps to a cleaner city</p>
-        </div>
-        <div class="how-steps">
-          <div class="how-step card fade-in stagger-1">
-            <div class="how-step-num">01</div>
-            <div class="how-step-icon">📸</div>
-            <h3>Snap & Report</h3>
-            <p>Take a photo of the issue, fill in details, and submit your report in under 60 seconds.</p>
-          </div>
-          <div class="how-step-arrow">→</div>
-          <div class="how-step card fade-in stagger-2">
-            <div class="how-step-num">02</div>
-            <div class="how-step-icon">🗺️</div>
-            <h3>Maps & Alerts</h3>
-            <p>Your report appears live on the community map. Nearby residents get notified instantly.</p>
-          </div>
-          <div class="how-step-arrow">→</div>
-          <div class="how-step card fade-in stagger-3">
-            <div class="how-step-num">03</div>
-            <div class="how-step-icon">✅</div>
-            <h3>Track & Resolve</h3>
-            <p>Authorities and admins update the status. See your report go from Active → Resolved.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── CTA ── -->
-    <section class="section-cta">
-      <div class="container">
-        <div class="cta-card glass-panel">
-          <div class="cta-content">
-            <h2 class="cta-title">Ready to Make a Difference?</h2>
-            <p class="cta-subtitle">Join thousands of citizens building a cleaner, safer city.</p>
-            <div class="cta-actions" id="ctaActions">
-              <a href="pages/report.html" class="btn btn-primary btn-lg">Start Reporting Now</a>
+          <div class="hero-stats slide-up stagger-4">
+            <div class="hero-stat">
+              <span class="hero-stat-num" id="totalReports">—</span>
+              <span class="hero-stat-label">Reports Filed</span>
+            </div>
+            <div class="hero-stat-divider"></div>
+            <div class="hero-stat">
+              <span class="hero-stat-num" id="resolvedCount">—</span>
+              <span class="hero-stat-label">Issues Resolved</span>
+            </div>
+            <div class="hero-stat-divider"></div>
+            <div class="hero-stat">
+              <span class="hero-stat-num" id="activeCount">—</span>
+              <span class="hero-stat-label">Active Alerts</span>
             </div>
           </div>
-          <div class="cta-illustration">🌱🏙️🌿</div>
         </div>
-      </div>
-    </section>
+        <div class="hero-scroll-hint">
+          <span>Scroll to explore</span>
+          <div class="scroll-arrow">↓</div>
+        </div>
+      </section>
 
-    <!-- ── Footer ── -->
-    <footer class="footer">
-      <div class="container footer-inner">
-        <div class="footer-brand">
-          <span class="nav-logo">🌿 EcoAlert</span>
-          <p>Community-powered pollution reporting for a better tomorrow.</p>
+      <!-- ── Issue Types ── -->
+      <section class="section-issues">
+        <div class="container">
+          <div class="section-header text-center">
+            <h2 class="section-title">What Can You Report?</h2>
+            <p class="section-subtitle">
+              7 categories covering all major environmental hazards
+            </p>
+          </div>
+          <div class="issue-types-grid" id="issueTypesGrid"></div>
         </div>
-        <div class="footer-links">
-          <a href="pages/map.html">Live Map</a>
-          <a href="pages/report.html">Report Issue</a>
-          <a href="pages/dashboard.html">Dashboard</a>
-          <a href="pages/admin.html">Admin</a>
-        </div>
-        <div class="footer-copy">© 2025 EcoAlert. Built for a cleaner world.</div>
-      </div>
-    </footer>
-  </div>
+      </section>
 
-  <script type="module" src="js/pages/index.js"></script>
-</body>
+      <!-- ── Recent Reports ── -->
+      <section class="section-recent">
+        <div class="container">
+          <div class="section-header flex justify-between items-center">
+            <div>
+              <h2 class="section-title">Recent Reports</h2>
+              <p class="section-subtitle">Latest community alerts near you</p>
+            </div>
+            <a href="pages/map.html" class="btn btn-ghost btn-sm">View All →</a>
+          </div>
+          <div class="reports-grid" id="recentReportsGrid">
+            <!-- skeleton -->
+            <div class="report-card-skeleton"></div>
+            <div class="report-card-skeleton"></div>
+            <div class="report-card-skeleton"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── How It Works ── -->
+      <section class="section-how">
+        <div class="container">
+          <div class="section-header text-center">
+            <h2 class="section-title">How EcoAlert Works</h2>
+            <p class="section-subtitle">Three simple steps to a cleaner city</p>
+          </div>
+          <div class="how-steps">
+            <div class="how-step card fade-in stagger-1">
+              <div class="how-step-num">01</div>
+              <div class="how-step-icon">📸</div>
+              <h3>Snap & Report</h3>
+              <p>
+                Take a photo of the issue, fill in details, and submit your
+                report in under 60 seconds.
+              </p>
+            </div>
+            <div class="how-step-arrow">→</div>
+            <div class="how-step card fade-in stagger-2">
+              <div class="how-step-num">02</div>
+              <div class="how-step-icon">🗺️</div>
+              <h3>Maps & Alerts</h3>
+              <p>
+                Your report appears live on the community map. Nearby residents
+                get notified instantly.
+              </p>
+            </div>
+            <div class="how-step-arrow">→</div>
+            <div class="how-step card fade-in stagger-3">
+              <div class="how-step-num">03</div>
+              <div class="how-step-icon">✅</div>
+              <h3>Track & Resolve</h3>
+              <p>
+                Authorities and admins update the status. See your report go
+                from Active → Resolved.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── CTA ── -->
+      <section class="section-cta">
+        <div class="container">
+          <div class="cta-card glass-panel">
+            <div class="cta-content">
+              <h2 class="cta-title">Ready to Make a Difference?</h2>
+              <p class="cta-subtitle">
+                Join thousands of citizens building a cleaner, safer city.
+              </p>
+              <div class="cta-actions" id="ctaActions">
+                <a href="pages/report.html" class="btn btn-primary btn-lg"
+                  >Start Reporting Now</a
+                >
+              </div>
+            </div>
+            <div class="cta-illustration">🌱🏙️🌿</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Footer ── -->
+      <footer class="footer">
+        <div class="container footer-inner">
+          <div class="footer-brand">
+            <span class="nav-logo">🌿 EcoAlert</span>
+            <p>Community-powered pollution reporting for a better tomorrow.</p>
+          </div>
+          <!-- Footer navigation removed as requested -->
+          <div class="footer-copy">
+            © 2026 EcoAlert. Built for a cleaner world.
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="module" src="js/pages/index.js"></script>
+  </body>
 </html>
