@@ -687,3 +687,26 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 @media (max-width: 640px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, var(--bg-glass-2) 25%, var(--bg-glass) 50%, var(--bg-glass-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Hide content until ready */
+.content-hidden {
+  opacity: 0;
+  min-height: 200px;
+}
+
+.content-visible {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}

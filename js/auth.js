@@ -1,5 +1,5 @@
 // ============================================================
-// EcoAlert - Authentication Module (Google Auth)
+// EcoAlert - Authentication Module (Optimized)
 // ============================================================
 
 import { auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged, 
@@ -7,31 +7,53 @@ import { auth, googleProvider, signInWithPopup, signOut, onAuthStateChanged,
 import { showToast } from './utils.js';
 
 let currentUser = null;
+let authInitialized = false;
+let pendingCallbacks = [];
 
 export function initAuth(callback) {
+  // Store callback for later if not initialized yet
+  if (authInitialized && currentUser !== undefined) {
+    callback(currentUser);
+    return;
+  }
+  
+  pendingCallbacks.push(callback);
+  
+  if (authInitialized) return;
+  
   onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    authInitialized = true;
+    
     if (user) {
-      currentUser = user;
-      await ensureUserDocument(user);
+      // Quick profile update without waiting for Firestore
       updateAuthUI(user);
-      showToast(`Welcome ${user.displayName || 'User'}! 🌿`, 'success');
+      
+      // Update Firestore in background (don't await)
+      ensureUserDocument(user).catch(console.error);
     } else {
-      currentUser = null;
       updateAuthUI(null);
     }
-    if (callback) callback(user);
+    
+    // Call all pending callbacks
+    pendingCallbacks.forEach(cb => cb(user));
+    pendingCallbacks = [];
   });
 }
 
 export async function signInWithGoogle() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    showToast(`Welcome ${result.user.displayName || 'User'}!`, 'success');
+    currentUser = result.user;
+    updateAuthUI(result.user);
+    showToast(`Welcome ${result.user.displayName || 'User'}! 🌿`, 'success');
     return result.user;
   } catch (error) {
     console.error("Google Sign-In Error:", error);
     if (error.code === 'auth/popup-blocked') {
-      showToast('Popup was blocked. Please allow popups for this site.', 'error');
+      showToast('Please allow popups for this site', 'error');
+    } else if (error.code === 'auth/cancelled-popup-request') {
+      // User cancelled, ignore
     } else {
       showToast('Sign in failed. Please try again.', 'error');
     }
@@ -42,9 +64,15 @@ export async function signInWithGoogle() {
 export async function signOutUser() {
   try {
     await signOut(auth);
+    currentUser = null;
     showToast('Signed out successfully', 'info');
-    window.location.href = getBasePath() + 'index.html';
-  } catch {
+    // Redirect to home after sign out
+    if (!window.location.pathname.includes('index.html') && window.location.pathname !== '/') {
+      window.location.href = '/index.html';
+    } else {
+      window.location.reload();
+    }
+  } catch (error) {
     showToast('Sign out failed', 'error');
   }
 }
@@ -58,30 +86,20 @@ async function ensureUserDocument(user) {
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
     
-    // Generate username from email (remove @gmail.com and special chars)
-    let username = user.displayName || user.email?.split('@')[0] || 'user';
-    username = username.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
-
-    const payload = {
-      uid: user.uid,
-      username: username,
-      email: user.email || '',
-      displayName: user.displayName || username,
-      photoURL: user.photoURL || '',
-      role: 'user',
-      reportsCount: 0,
-      joinedAt: serverTimestamp()
-    };
-
     if (!userSnap.exists()) {
-      await setDoc(userRef, payload);
-    } else {
-      // Update existing user
+      let username = user.displayName || user.email?.split('@')[0] || 'user';
+      username = username.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+      
       await setDoc(userRef, {
-        displayName: user.displayName || userSnap.data().displayName,
-        photoURL: user.photoURL || userSnap.data().photoURL,
-        lastLoginAt: serverTimestamp()
-      }, { merge: true });
+        uid: user.uid,
+        username: username,
+        email: user.email || '',
+        displayName: user.displayName || username,
+        photoURL: user.photoURL || '',
+        role: 'user',
+        reportsCount: 0,
+        joinedAt: serverTimestamp()
+      });
     }
   } catch (error) {
     console.error('Error creating user document:', error);
@@ -102,31 +120,19 @@ function updateAuthUI(user) {
   const loginBtns = document.querySelectorAll('.btn-login');
   const logoutBtns = document.querySelectorAll('.btn-logout');
   const userAvatars = document.querySelectorAll('.user-avatar');
-  const userNames = document.querySelectorAll('.user-name');
-  const authRequired = document.querySelectorAll('.auth-required');
-
+  
   if (user) {
-    loginBtns.forEach((btn) => btn.style.display = 'none');
-    logoutBtns.forEach((btn) => btn.style.display = 'flex');
+    loginBtns.forEach((btn) => { if (btn) btn.style.display = 'none'; });
+    logoutBtns.forEach((btn) => { if (btn) btn.style.display = 'flex'; });
     userAvatars.forEach((el) => {
-      if (el.tagName === 'IMG') {
+      if (el && el.tagName === 'IMG') {
         el.src = user.photoURL || 'assets/default-avatar.png';
         el.style.display = 'block';
       }
     });
-    userNames.forEach((el) => {
-      el.textContent = user.displayName || user.email?.split('@')[0] || 'User';
-    });
-    authRequired.forEach((el) => { el.style.display = ''; });
   } else {
-    loginBtns.forEach((btn) => btn.style.display = 'flex');
-    logoutBtns.forEach((btn) => btn.style.display = 'none');
-    userAvatars.forEach((el) => { if (el.tagName === 'IMG') el.style.display = 'none'; });
-    userNames.forEach((el) => { el.textContent = ''; });
-    authRequired.forEach((el) => { el.style.display = 'none'; });
+    loginBtns.forEach((btn) => { if (btn) btn.style.display = 'flex'; });
+    logoutBtns.forEach((btn) => { if (btn) btn.style.display = 'none'; });
+    userAvatars.forEach((el) => { if (el && el.tagName === 'IMG') el.style.display = 'none'; });
   }
-}
-
-function getBasePath() {
-  return window.location.pathname.includes('/pages/') ? '../' : '';
 }
