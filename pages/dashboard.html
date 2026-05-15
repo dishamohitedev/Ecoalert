@@ -4,30 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — EcoAlert</title>
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="../css/main.css" />
   <link rel="stylesheet" href="../css/dashboard.css" />
+  <link rel="stylesheet" href="../css/auth-modal.css" />
 </head>
 <body>
   <nav class="navbar">
     <a href="../index.html" class="nav-logo"><span class="logo-leaf">🌿</span> EcoAlert</a>
-    <button class="hamburger" id="hamburger">☰</button>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="../index.html"><span class="nav-icon">🏠</span> Home</a></li>
-      <li><a href="map.html"><span class="nav-icon">🗺️</span> Map</a></li>
-      <li><a href="report.html"><span class="nav-icon">📢</span> Report</a></li>
-      <li><a href="dashboard.html" class="active"><span class="nav-icon">📊</span> Dashboard</a></li>
-      <li><a href="profile.html" class="auth-required"><span class="nav-icon">👤</span> Profile</a></li>
-    </ul>
     <div class="nav-actions">
       <button class="dark-mode-toggle" id="darkToggle">🌙</button>
-      <img class="user-avatar" id="userAvatar" src="" alt="" />
       <button class="btn btn-sm btn-login" id="loginBtn">Sign In</button>
-      <button class="btn btn-sm btn-logout" id="logoutBtn">Sign Out</button>
+      <button class="btn btn-sm btn-logout" id="logoutBtn" style="display: none">Sign Out</button>
     </div>
   </nav>
 
@@ -38,7 +29,6 @@
         <p class="section-subtitle">Real-time insights on pollution reports across the community</p>
       </div>
 
-      <!-- Stats Row -->
       <div class="stats-grid mb-4" id="statsGrid">
         <div class="stat-card fade-in stagger-1">
           <div class="stat-icon">📋</div>
@@ -67,15 +57,12 @@
         </div>
       </div>
 
-      <!-- Charts Row -->
       <div class="charts-grid">
-        <!-- Issue Types Chart -->
         <div class="card chart-card fade-in">
           <h3 class="chart-title">📌 Issues by Type</h3>
           <div class="bar-chart" id="typeChart"></div>
         </div>
 
-        <!-- Severity Chart -->
         <div class="card chart-card fade-in stagger-2">
           <h3 class="chart-title">⚡ Issues by Severity</h3>
           <div class="donut-chart-wrap">
@@ -84,14 +71,12 @@
           </div>
         </div>
 
-        <!-- Status Chart -->
         <div class="card chart-card fade-in stagger-3">
           <h3 class="chart-title">🔄 Status Breakdown</h3>
           <div class="status-rings" id="statusRings"></div>
         </div>
       </div>
 
-      <!-- Most Polluted Areas + Recent Activity -->
       <div class="lower-grid">
         <div class="card fade-in">
           <h3 class="chart-title">🏆 Most Common Issues</h3>
@@ -104,7 +89,6 @@
         </div>
       </div>
 
-      <!-- All Reports Table -->
       <div class="card mt-4 fade-in">
         <div class="table-header">
           <h3 class="chart-title" style="margin:0">📋 All Reports</h3>
@@ -130,16 +114,7 @@
         <div class="reports-table-wrap">
           <table class="reports-table" id="reportsTable">
             <thead>
-              <tr>
-                <th>Type</th>
-                <th>Description</th>
-                <th>Severity</th>
-                <th>Status</th>
-                <th>Location</th>
-                <th>Reporter</th>
-                <th>Time</th>
-                <th>Votes</th>
-              </tr>
+              <tr><th>Type</th><th>Description</th><th>Severity</th><th>Status</th><th>Location</th><th>Reporter</th><th>Time</th><th>Votes</th></tr>
             </thead>
             <tbody id="reportsTableBody">
               <tr><td colspan="8" class="text-center" style="padding:40px"><div class="spinner" style="margin:0 auto"></div></td></tr>

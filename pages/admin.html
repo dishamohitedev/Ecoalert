@@ -4,27 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel — EcoAlert</title>
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="../css/main.css" />
   <link rel="stylesheet" href="../css/admin.css" />
+  <link rel="stylesheet" href="../css/auth-modal.css" />
 </head>
 <body>
   <nav class="navbar">
     <a href="../index.html" class="nav-logo"><span class="logo-leaf">🌿</span> EcoAlert</a>
-    <button class="hamburger" id="hamburger">☰</button>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="../index.html"><span class="nav-icon">🏠</span> Home</a></li>
-      <li><a href="map.html"><span class="nav-icon">🗺️</span> Map</a></li>
-      <li><a href="dashboard.html"><span class="nav-icon">📊</span> Dashboard</a></li>
-      <li><a href="admin.html" class="active"><span class="nav-icon">🛡️</span> Admin</a></li>
-    </ul>
     <div class="nav-actions">
       <button class="dark-mode-toggle" id="darkToggle">🌙</button>
-      <img class="user-avatar" id="userAvatar" src="" alt="" />
       <button class="btn btn-sm btn-logout" id="logoutBtn">Sign Out</button>
     </div>
   </nav>
@@ -32,7 +24,6 @@
   <div class="page-wrapper page-content">
     <div class="container">
 
-      <!-- Access Denied -->
       <div id="adminAccessDenied" style="display:none">
         <div class="card text-center" style="padding:80px 40px; max-width:500px; margin:0 auto;">
           <div style="font-size:4rem;margin-bottom:20px">🚫</div>
@@ -42,7 +33,6 @@
         </div>
       </div>
 
-      <!-- Admin Content -->
       <div id="adminContent" style="display:none">
         <div class="admin-header fade-in">
           <div>
@@ -54,7 +44,6 @@
           </div>
         </div>
 
-        <!-- Admin Stats -->
         <div class="stats-grid fade-in stagger-1 mb-4">
           <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-number" id="adminTotal">—</div><div class="stat-label">Total Reports</div></div>
           <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-number" id="adminPending" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">—</div><div class="stat-label">Needs Action</div></div>
@@ -62,7 +51,6 @@
           <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-number" id="adminUsers">—</div><div class="stat-label">Active Users</div></div>
         </div>
 
-        <!-- Reports Management -->
         <div class="card fade-in stagger-2">
           <div class="table-header">
             <h3 style="font-family:var(--font-display);font-weight:700;font-size:1rem;margin:0">📋 All Reports</h3>
@@ -101,7 +89,6 @@
     </div>
   </div>
 
-  <!-- Confirm Modal -->
   <div class="modal-overlay" id="confirmModal" style="display:none">
     <div class="modal glass-panel">
       <h3 class="modal-title" id="modalTitle">Confirm Action</h3>

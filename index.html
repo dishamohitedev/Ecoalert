@@ -8,11 +8,8 @@
       name="description"
       content="Report polluted and unsafe areas in your city. Help your community stay safe."
     />
-    <!-- Fonts: preconnect first so DNS+TLS is resolved before request -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="dns-prefetch" href="https://www.gstatic.com" />
-    <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
@@ -20,9 +17,9 @@
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="css/main.css" />
     <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/auth-modal.css" />
   </head>
   <body>
-    <!-- ── Navbar ── -->
     <nav class="navbar">
       <a href="index.html" class="nav-logo"
         ><span class="logo-leaf">🌿</span> EcoAlert</a
@@ -36,12 +33,11 @@
           🌙
         </button>
         <button class="btn btn-sm btn-login" id="loginBtn">Sign In</button>
-        <button class="btn btn-sm btn-logout" id="logoutBtn">Sign Out</button>
+        <button class="btn btn-sm btn-logout" id="logoutBtn" style="display: none">Sign Out</button>
       </div>
     </nav>
 
     <div class="page-wrapper">
-      <!-- ── Hero ── -->
       <section class="hero">
         <div class="hero-bg-orbs">
           <div class="orb orb-1"></div>
@@ -60,7 +56,7 @@
             build a cleaner community — one report at a time.
           </p>
           <div class="hero-actions slide-up stagger-3">
-            <a href="pages/report.html" class="btn btn-primary btn-lg">
+            <a href="pages/report.html" class="btn btn-primary btn-lg" id="heroReportBtn">
               <span>📢</span> Report an Issue
             </a>
             <a href="pages/map.html" class="btn btn-ghost btn-lg">
@@ -90,7 +86,6 @@
         </div>
       </section>
 
-      <!-- ── Issue Types ── -->
       <section class="section-issues">
         <div class="container">
           <div class="section-header text-center">
@@ -103,7 +98,6 @@
         </div>
       </section>
 
-      <!-- ── Recent Reports ── -->
       <section class="section-recent">
         <div class="container">
           <div class="section-header flex justify-between items-center">
@@ -114,7 +108,6 @@
             <a href="pages/map.html" class="btn btn-ghost btn-sm">View All →</a>
           </div>
           <div class="reports-grid" id="recentReportsGrid">
-            <!-- skeleton -->
             <div class="report-card-skeleton"></div>
             <div class="report-card-skeleton"></div>
             <div class="report-card-skeleton"></div>
@@ -122,7 +115,6 @@
         </div>
       </section>
 
-      <!-- ── How It Works ── -->
       <section class="section-how">
         <div class="container">
           <div class="section-header text-center">
@@ -163,7 +155,6 @@
         </div>
       </section>
 
-      <!-- ── CTA ── -->
       <section class="section-cta">
         <div class="container">
           <div class="cta-card glass-panel">
@@ -173,9 +164,7 @@
                 Join thousands of citizens building a cleaner, safer city.
               </p>
               <div class="cta-actions" id="ctaActions">
-                <a href="pages/report.html" class="btn btn-primary btn-lg"
-                  >Start Reporting Now</a
-                >
+                <a href="pages/report.html" class="btn btn-primary btn-lg" id="ctaReportBtn">Start Reporting Now</a>
               </div>
             </div>
             <div class="cta-illustration">🌱🏙️🌿</div>
@@ -183,14 +172,12 @@
         </div>
       </section>
 
-      <!-- ── Footer ── -->
       <footer class="footer">
         <div class="container footer-inner">
           <div class="footer-brand">
             <span class="nav-logo">🌿 EcoAlert</span>
             <p>Community-powered pollution reporting for a better tomorrow.</p>
           </div>
-          <!-- Footer navigation removed as requested -->
           <div class="footer-copy">
             © 2026 EcoAlert. Built for a cleaner world.
           </div>
