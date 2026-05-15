@@ -1,5 +1,6 @@
 // ── EcoAlert Map Page JS ──
-import { initAuth, signInWithGoogle, signOutUser } from '../auth.js';
+import { initAuth, signOutUser } from '../auth.js';
+import { openAuthModal } from '../authmodal.js';
 import { listenToReports, upvoteReport } from '../reports.js';
 import { initMap, renderMarkers, toggleHeatmap, showUserLocation, panTo, checkNearbyAlerts } from '../map.js';
 import { initDarkMode, toggleDarkMode, ISSUE_TYPES, SEVERITY_LEVELS, STATUS_TYPES,
@@ -8,7 +9,7 @@ import { initDarkMode, toggleDarkMode, ISSUE_TYPES, SEVERITY_LEVELS, STATUS_TYPE
 initDarkMode();
 
 // ─── Auth ───────────────────────────────────────────────────
-document.getElementById('loginBtn')?.addEventListener('click', signInWithGoogle);
+document.getElementById('loginBtn')?.addEventListener('click', () => openAuthModal('login'));
 document.getElementById('logoutBtn')?.addEventListener('click', signOutUser);
 document.getElementById('hamburger')?.addEventListener('click', () => {
   document.getElementById('navLinks')?.classList.toggle('open');

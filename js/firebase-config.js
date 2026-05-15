@@ -59,7 +59,8 @@ const FIREBASE_CONFIG = {
 
 // Initialize Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile,
+  signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc,
   query, where, orderBy, limit, onSnapshot, serverTimestamp, increment, arrayUnion, arrayRemove }
@@ -71,9 +72,9 @@ const app = initializeApp(FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
-const googleProvider = new GoogleAuthProvider();
 
-export { auth, db, storage, googleProvider, signInWithPopup, signOut, onAuthStateChanged,
+export { auth, db, storage, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  updateProfile, signOut, onAuthStateChanged,
   collection, addDoc, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc, query, where, orderBy,
   limit, onSnapshot, serverTimestamp, increment, arrayUnion, arrayRemove, ref, uploadBytes,
-  getDownloadURL, GoogleAuthProvider };
+  getDownloadURL };

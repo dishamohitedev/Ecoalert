@@ -1,12 +1,13 @@
 // ── EcoAlert Profile Page JS ──
-import { initAuth, signInWithGoogle, signOutUser, getCurrentUser } from '../auth.js';
+import { initAuth, signOutUser, getCurrentUser } from '../auth.js';
+import { openAuthModal } from '../authmodal.js';
 import { getUserReports, upvoteReport } from '../reports.js';
 import { db, doc, getDoc } from '../firebase-config.js';
 import { initDarkMode, toggleDarkMode, ISSUE_TYPES, SEVERITY_LEVELS, STATUS_TYPES,
   timeAgo, formatDate, showToast } from '../utils.js';
 
 initDarkMode();
-document.getElementById('loginBtn')?.addEventListener('click', signInWithGoogle);
+document.getElementById('loginBtn')?.addEventListener('click', () => openAuthModal('login'));
 document.getElementById('logoutBtn')?.addEventListener('click', signOutUser);
 document.getElementById('hamburger')?.addEventListener('click', () => {
   document.getElementById('navLinks')?.classList.toggle('open');
@@ -14,7 +15,7 @@ document.getElementById('hamburger')?.addEventListener('click', () => {
 document.getElementById('darkToggle')?.addEventListener('click', toggleDarkMode);
 
 document.getElementById('profileSignInBtn')?.addEventListener('click', async () => {
-  await signInWithGoogle();
+  openAuthModal('login');
 });
 
 initAuth(async (user) => {
@@ -32,7 +33,7 @@ async function loadProfile(user) {
   // Basic info
   document.getElementById('profilePhoto').src = user.photoURL || '';
   document.getElementById('profileName').textContent = user.displayName || 'User';
-  document.getElementById('profileEmail').textContent = user.email || '';
+  document.getElementById('profileEmail').textContent = `Username: @${user.displayName || 'user'}`;
 
   // Get Firestore user doc
   try {

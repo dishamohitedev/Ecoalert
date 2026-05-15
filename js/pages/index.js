@@ -23,12 +23,13 @@ function setupNavHandlers() {
 // ─── Auth (lazy) ─────────────────────────────────────────────
 async function loadFirebaseData() {
   try {
-    const [{ initAuth, signInWithGoogle, signOutUser }, { fetchReports }] = await Promise.all([
+    const [{ initAuth, signOutUser }, { openAuthModal }, { fetchReports }] = await Promise.all([
       import('../auth.js'),
+      import('../authmodal.js'),
       import('../reports.js')
     ]);
 
-    document.getElementById('loginBtn')?.addEventListener('click', signInWithGoogle);
+    document.getElementById('loginBtn')?.addEventListener('click', () => openAuthModal('login'));
     document.getElementById('logoutBtn')?.addEventListener('click', signOutUser);
 
     initAuth((user) => {

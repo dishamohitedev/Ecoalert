@@ -1,12 +1,13 @@
 // ── EcoAlert Report Page JS ──
-import { initAuth, signInWithGoogle, getCurrentUser, signOutUser } from '../auth.js';
+import { initAuth, getCurrentUser, signOutUser } from '../auth.js';
+import { openAuthModal } from '../authmodal.js';
 import { submitReport } from '../reports.js';
 import { initDarkMode, toggleDarkMode, ISSUE_TYPES, getCurrentLocation,
   reverseGeocode, showToast } from '../utils.js';
 
 initDarkMode();
 
-document.getElementById('loginBtn')?.addEventListener('click', signInWithGoogle);
+document.getElementById('loginBtn')?.addEventListener('click', () => openAuthModal('login'));
 document.getElementById('logoutBtn')?.addEventListener('click', signOutUser);
 document.getElementById('hamburger')?.addEventListener('click', () => {
   document.getElementById('navLinks')?.classList.toggle('open');
@@ -25,11 +26,7 @@ initAuth((user) => {
 });
 
 document.getElementById('reportSignInBtn')?.addEventListener('click', async () => {
-  const user = await signInWithGoogle();
-  if (user) {
-    document.getElementById('authGate').style.display = 'none';
-    document.getElementById('reportForm').style.display = 'block';
-  }
+  openAuthModal('register');
 });
 
 // ─── Build Issue Type Picker ─────────────────────────────────

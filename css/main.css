@@ -220,15 +220,14 @@ body.dark::before {
 .btn-sm { padding: 6px 14px; font-size: 0.82rem; border-radius: var(--radius-sm); }
 .btn-lg { padding: 14px 28px; font-size: 1rem; }
 
-.btn-google-signin {
+.btn-auth-action {
   background: white;
   color: #333;
   border: 1px solid #ddd;
   box-shadow: var(--shadow-sm);
   font-weight: 600;
 }
-.btn-google-signin:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-.btn-google-signin img { width: 20px; height: 20px; }
+.btn-auth-action:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 
 .btn-logout {
   background: rgba(239,68,68,0.1);
@@ -245,7 +244,7 @@ body.dark::before {
 }
 .btn-login:hover { transform: translateY(-1px); }
 
-/* ─── Cards & Glass Panels ────────────────────────────────────── */
+/* ─── Cards & Glass Panels ───────────────────────────────────── */
 .card {
   background: var(--bg-card);
   backdrop-filter: var(--blur);
@@ -344,7 +343,7 @@ body.dark::before {
 .badge-status-in-progress { background: rgba(255,152,0,0.12); color: #FF9800; }
 .badge-status-resolved { background: rgba(76,175,80,0.12); color: #4CAF50; }
 
-.report-card-desc { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; }
+.report-card-desc { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; line-clamp: 2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; }
 .report-card-footer { display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); }
 .report-card-location { display: flex; align-items: center; gap: 4px; }
 .report-upvote { display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 8px; border-radius: 100px; transition: background var(--transition); }
