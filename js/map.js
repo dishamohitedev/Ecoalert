@@ -11,34 +11,31 @@ let userMarker = null;
 
 // ─── Initialize Map ───────────────────────────────────────────
 export function initMap(containerId, options = {}) {
-  const defaultCenter = options.center || [19.076, 72.877]; // Mumbai default
+  const defaultCenter = options.center || [19.076, 72.877];
   map = L.map(containerId, {
     center: defaultCenter,
     zoom: options.zoom || 12,
     zoomControl: false
   });
 
-  // OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
     maxZoom: 19
   }).addTo(map);
 
-  // Custom zoom control
   L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-  // Attribution
   map.attributionControl.setPrefix('EcoAlert 🌿');
 
   return map;
 }
 
-// ─── Get Map Instance ─────────────────────────────────────────
 export function getMap() { return map; }
 
 // ─── Render Report Markers ────────────────────────────────────
 export function renderMarkers(reports, filters = {}, onMarkerClick) {
   clearMarkers();
+
+  console.log(`🗺️ renderMarkers called with ${reports.length} total reports, filters:`, filters);
 
   const filtered = reports.filter(r => {
     if (filters.type && r.type !== filters.type) return false;
@@ -47,46 +44,73 @@ export function renderMarkers(reports, filters = {}, onMarkerClick) {
     return true;
   });
 
+  console.log(`🗺️ ${filtered.length} reports after filtering`);
+
+  let placed = 0;
+  let skipped = 0;
+
   filtered.forEach(report => {
-    if (!report.location?.lat || !report.location?.lng) return;
+    // ── FIXED: original used !lat which skips lat=0; use explicit null/undefined check ──
+    const lat = report.location?.lat;
+    const lng = report.location?.lng;
+
+    if (lat == null || lng == null || isNaN(lat) || isNaN(lng)) {
+      console.warn(`⚠️ Skipping report ${report.id} — bad location:`, report.location);
+      skipped++;
+      return;
+    }
+
+    console.log(`📍 Placing marker for report ${report.id} at [${lat}, ${lng}]`);
     const marker = createReportMarker(report, onMarkerClick);
-    if (marker) markers.push(marker);
+    if (marker) { markers.push(marker); placed++; }
   });
 
+  console.log(`✅ Placed ${placed} markers, skipped ${skipped}`);
   return filtered.length;
 }
 
 // ─── Create Single Marker ─────────────────────────────────────
 function createReportMarker(report, onMarkerClick) {
-  const cfg = ISSUE_TYPES[report.type] || ISSUE_TYPES.garbage;
-  const sev = SEVERITY_LEVELS[report.severity] || SEVERITY_LEVELS.medium;
-  const sta = STATUS_TYPES[report.status] || STATUS_TYPES.active;
+  try {
+    const cfg = ISSUE_TYPES[report.type] || ISSUE_TYPES.garbage;
+    const sev = SEVERITY_LEVELS[report.severity] || SEVERITY_LEVELS.medium;
+    const sta = STATUS_TYPES[report.status] || STATUS_TYPES.active;
 
-  const icon = L.divIcon({
-    html: `<div class="map-marker-wrap">
-      <div class="map-marker-pin" style="background:${cfg.markerColor};border:3px solid ${sev.color};">
-        <span>${cfg.icon}</span>
-      </div>
-      <div class="map-marker-pulse" style="background:${cfg.markerColor}40;"></div>
-    </div>`,
-    className: '',
-    iconSize: [44, 44],
-    iconAnchor: [22, 44],
-    popupAnchor: [0, -46]
-  });
+    const lat = parseFloat(report.location.lat);
+    const lng = parseFloat(report.location.lng);
 
-  const marker = L.marker([report.location.lat, report.location.lng], { icon }).addTo(map);
+    if (isNaN(lat) || isNaN(lng)) {
+      console.warn('Invalid lat/lng after parseFloat:', report.location);
+      return null;
+    }
 
-  // Popup content
-  const popup = buildPopupHTML(report, cfg, sev, sta);
-  marker.bindPopup(popup, { maxWidth: 320, className: 'eco-popup' });
+    const icon = L.divIcon({
+      html: `<div class="map-marker-wrap">
+        <div class="map-marker-pin" style="background:${cfg.markerColor};border:3px solid ${sev.color};">
+          <span>${cfg.icon}</span>
+        </div>
+        <div class="map-marker-pulse" style="background:${cfg.markerColor}40;"></div>
+      </div>`,
+      className: '',
+      iconSize: [44, 44],
+      iconAnchor: [22, 44],
+      popupAnchor: [0, -46]
+    });
 
-  marker.on('click', () => {
-    if (onMarkerClick) onMarkerClick(report);
-  });
+    const marker = L.marker([lat, lng], { icon }).addTo(map);
+    const popup = buildPopupHTML(report, cfg, sev, sta);
+    marker.bindPopup(popup, { maxWidth: 320, className: 'eco-popup' });
 
-  marker.reportId = report.id;
-  return marker;
+    marker.on('click', () => {
+      if (onMarkerClick) onMarkerClick(report);
+    });
+
+    marker.reportId = report.id;
+    return marker;
+  } catch (err) {
+    console.error('Error creating marker for report:', report.id, err);
+    return null;
+  }
 }
 
 // ─── Build Popup HTML ─────────────────────────────────────────
@@ -127,10 +151,7 @@ export function clearMarkers() {
 // ─── Toggle Heatmap ───────────────────────────────────────────
 export function toggleHeatmap(reports, enabled) {
   if (!map) return;
-
-  // Remove existing
   if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
-
   if (!enabled) return;
 
   if (!window.L.heatLayer) {
@@ -139,16 +160,14 @@ export function toggleHeatmap(reports, enabled) {
   }
 
   const points = reports
-    .filter(r => r.location?.lat)
+    .filter(r => r.location?.lat != null && !isNaN(r.location.lat))
     .map(r => {
       const sevWeight = { low: 0.3, medium: 0.6, high: 0.8, critical: 1.0 };
-      return [r.location.lat, r.location.lng, sevWeight[r.severity] || 0.5];
+      return [parseFloat(r.location.lat), parseFloat(r.location.lng), sevWeight[r.severity] || 0.5];
     });
 
   heatLayer = L.heatLayer(points, {
-    radius: 30,
-    blur: 20,
-    maxZoom: 17,
+    radius: 30, blur: 20, maxZoom: 17,
     gradient: { 0.2: '#4CAF50', 0.5: '#FF9800', 0.8: '#F44336', 1.0: '#B71C1C' }
   }).addTo(map);
 }
@@ -178,7 +197,7 @@ export function panTo(lat, lng, zoom = 15) {
 // ─── Check Nearby Alerts ─────────────────────────────────────
 export function checkNearbyAlerts(reports, userLat, userLng, radiusMeters = 1000) {
   return reports.filter(r => {
-    if (!r.location?.lat || r.status === 'resolved') return false;
+    if (r.location?.lat == null || r.status === 'resolved') return false;
     const dist = getDistance(userLat, userLng, r.location.lat, r.location.lng);
     return dist <= radiusMeters;
   });
@@ -187,7 +206,5 @@ export function checkNearbyAlerts(reports, userLat, userLng, radiusMeters = 1000
 // ─── Enable Click-to-Report ───────────────────────────────────
 export function enableClickToReport(callback) {
   if (!map) return;
-  map.on('click', (e) => {
-    callback(e.latlng.lat, e.latlng.lng);
-  });
+  map.on('click', (e) => { callback(e.latlng.lat, e.latlng.lng); });
 }

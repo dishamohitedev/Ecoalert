@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Map</title>
+    <script type="module">
+        import { fetchReports } from '../js/reports.js';
+        import { initAuth } from '../js/auth.js';
+        
+        console.log('Testing Firebase fetch...');
+        
+        initAuth(async (user) => {
+            console.log('Auth user:', user);
+            
+            try {
+                const reports = await fetchReports();
+                console.log('Reports fetched:', reports.length);
+                console.log('Reports data:', reports);
+                
+                document.body.innerHTML = `
+                    <h1>Reports in Database: ${reports.length}</h1>
+                    <pre>${JSON.stringify(reports, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+                document.body.innerHTML = `<h1>Error: ${error.message}</h1>`;
+            }
+        });
+    </script>
+</head>
+<body>
+    <h2>Loading reports from Firebase...</h2>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoAlert Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; }
+        #map { height: 100vh; width: 100%; }
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            min-width: 200px;
+        }
+        .controls h3 { margin-bottom: 10px; }
+        .report-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #f0f0f0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .report-item:hover { background: #ddd; }
+        .login-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: #2d7a2d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .login-btn:hover { background: #1e5a1e; }
+        .status {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <button class="login-btn" id="loginBtn">Sign In with Google</button>
+    <button class="login-btn" id="logoutBtn" style="display:none; background:#dc3545;">Sign Out</button>
+    <div id="map"></div>
+    <div class="controls" id="controls" style="display:none;">
+        <h3>📍 Reports</h3>
+        <div id="reportList">Loading reports...</div>
+    </div>
+    <div class="status" id="status">Loading map...</div>
+
+    <script type="module">
+        import { initAuthModal, openAuthModal } from '../js/authmodal.js';
+        import { initAuth, signOutUser, getCurrentUser } from '../js/auth.js';
+        import { fetchReports, listenToReports } from '../js/reports.js';
+
+        // Initialize auth modal
+        initAuthModal();
+
+        let map;
+        let markers = [];
+
+        // Initialize map
+        function initMap() {
+            map = L.map('map').setView([19.076, 72.877], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            document.getElementById('status').innerHTML = '✅ Map loaded. Waiting for reports...';
+        }
+
+        // Add markers to map
+        function addMarkersToMap(reports) {
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            
+            const reportListDiv = document.getElementById('reportList');
+            
+            if (!reports || reports.length === 0) {
+                reportListDiv.innerHTML = '<p>No reports yet. Submit one!</p>';
+                document.getElementById('status').innerHTML = `✅ Map ready. ${reports?.length || 0} reports found.`;
+                return;
+            }
+            
+            document.getElementById('status').innerHTML = `✅ Showing ${reports.length} reports on map`;
+            
+            // Sort reports by date (newest first)
+            const sortedReports = [...reports].sort((a, b) => {
+                const aDate = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+                const bDate = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+                return bDate - aDate;
+            });
+            
+            // Add each report to map
+            sortedReports.forEach(report => {
+                // Check if report has valid location
+                if (!report.location || !report.location.lat || !report.location.lng) {
+                    console.warn('Report missing location:', report.id);
+                    return;
+                }
+                
+                // Create marker
+                const marker = L.marker([report.location.lat, report.location.lng]).addTo(map);
+                
+                // Create popup content
+                const popupContent = `
+                    <div style="min-width: 200px;">
+                        <h4>${report.type || 'Unknown type'}</h4>
+                        <p><strong>Severity:</strong> ${report.severity || 'Unknown'}</p>
+                        <p><strong>Status:</strong> ${report.status || 'active'}</p>
+                        <p>${report.description || 'No description'}</p>
+                        <p><small>Reported by: ${report.userName || 'Anonymous'}</small></p>
+                        <p><small>${report.location.address || `${report.location.lat}, ${report.location.lng}`}</small></p>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+                
+                // Also show in sidebar
+                const reportDiv = document.createElement('div');
+                reportDiv.className = 'report-item';
+                reportDiv.innerHTML = `
+                    <strong>${report.type}</strong><br>
+                    ${report.description?.substring(0, 50) || ''}...<br>
+                    <small>📍 ${report.location.address?.substring(0, 30) || 'Unknown location'}</small>
+                `;
+                reportDiv.onclick = () => {
+                    map.setView([report.location.lat, report.location.lng], 15);
+                    marker.openPopup();
+                };
+                reportListDiv.appendChild(reportDiv);
+            });
+            
+            // If there are reports, fit map to show all
+            if (markers.length > 0) {
+                const group = L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+
+        // Load reports from Firebase
+        async function loadReports() {
+            const controls = document.getElementById('controls');
+            const reportList = document.getElementById('reportList');
+            
+            reportList.innerHTML = '<p>Loading reports from Firebase...</p>';
+            
+            try {
+                // Try real Firebase first
+                const reports = await fetchReports();
+                console.log('Reports loaded:', reports.length);
+                
+                if (reports && reports.length > 0) {
+                    controls.style.display = 'block';
+                    addMarkersToMap(reports);
+                } else {
+                    reportList.innerHTML = '<p>No reports found. Submit your first report!</p>';
+                    document.getElementById('status').innerHTML = '⚠️ No reports in database. Submit one!';
+                }
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                reportList.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                document.getElementById('status').innerHTML = '❌ Error loading reports. Check console.';
+            }
+        }
+
+        // Update UI based on auth state
+        function updateAuthUI(user) {
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const controls = document.getElementById('controls');
+            
+            if (user) {
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'block';
+                controls.style.display = 'block';
+                document.getElementById('status').innerHTML += ' | ✅ Logged in';
+                loadReports(); // Load reports when logged in
+            } else {
+                loginBtn.style.display = 'block';
+                logoutBtn.style.display = 'none';
+                controls.style.display = 'none';
+                document.getElementById('status').innerHTML = '🔐 Please sign in to see reports';
+            }
+        }
+
+        // Initialize
+        initMap();
+        
+        // Setup auth
+        initAuth((user) => {
+            updateAuthUI(user);
+        });
+        
+        // Setup buttons
+        document.getElementById('loginBtn').onclick = () => openAuthModal();
+        document.getElementById('logoutBtn').onclick = async () => {
+            await signOutUser();
+            updateAuthUI(null);
+            window.location.reload();
+        };
+        
+        // Listen for real-time updates
+        if (typeof listenToReports === 'function') {
+            listenToReports((reports) => {
+                console.log('Real-time update:', reports.length);
+                if (reports && reports.length > 0) {
+                    addMarkersToMap(reports);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
