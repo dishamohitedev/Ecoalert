@@ -8,161 +8,152 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" />
   <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="../css/main.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <style>
-    #map {
-      height: calc(100vh - 80px);
-      width: 100%;
-    }
-    .floating-btn {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 1000;
-    }
-    .filter-bar {
-      position: fixed;
-      top: 80px;
-      left: 16px;
-      z-index: 1000;
-      background: var(--bg-card);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      min-width: 180px;
-    }
-    .filter-bar select {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 8px;
-      border-radius: 8px;
-      background: var(--bg-glass-2);
-      border: 1px solid var(--border-glass);
-      color: var(--text-primary);
-    }
-    @media (max-width: 768px) {
-      .filter-bar { display: none; }
-    }
-  </style>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+  <!-- main.css MUST come first — it defines all CSS variables used by other sheets -->
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/auth-modal.css" />
+  <link rel="stylesheet" href="../css/map.css" />
 </head>
 <body>
+
+  <!-- ── Navbar ── -->
   <nav class="navbar">
     <a href="../index.html" class="nav-logo"><span class="logo-leaf">🌿</span> EcoAlert</a>
     <div class="nav-actions">
-      <button class="dark-mode-toggle" id="darkToggle">🌙</button>
-      <button class="btn btn-sm btn-logout" id="logoutBtn">Sign Out</button>
+      <button class="dark-mode-toggle" id="darkToggle" title="Toggle dark mode">🌙</button>
+      <button class="btn btn-login" id="loginBtn">Sign In</button>
+      <button class="btn btn-logout" id="logoutBtn" style="display:none">Sign Out</button>
     </div>
   </nav>
 
-  <div class="filter-bar" id="filterBar">
-    <select id="typeFilter">
-      <option value="">All Types</option>
-      <option value="garbage">🗑️ Garbage</option>
-      <option value="waterlogging">💧 Waterlogging</option>
-      <option value="air">🌫️ Air Pollution</option>
-      <option value="road">⚠️ Unsafe Road</option>
-    </select>
-    <select id="severityFilter">
-      <option value="">All Severities</option>
-      <option value="low">🟢 Low</option>
-      <option value="medium">🟡 Medium</option>
-      <option value="high">🔴 High</option>
-      <option value="critical">🚨 Critical</option>
-    </select>
+  <!-- ── Layout ── -->
+  <div class="map-page-layout">
+
+    <!-- ── Sidebar ── -->
+    <aside class="map-sidebar" id="mapSidebar">
+
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">🗺️ Live Reports</h2>
+        <button class="sidebar-close" id="sidebarClose" title="Close">✕</button>
+      </div>
+
+      <!-- Stats Strip -->
+      <div class="map-stats-strip">
+        <div class="map-stat">
+          <span class="map-stat-num stat-total" id="msTotal">—</span>
+          <div class="map-stat-lbl">TOTAL</div>
+        </div>
+        <div class="map-stat">
+          <span class="map-stat-num active-color" id="msActive">—</span>
+          <div class="map-stat-lbl">ACTIVE</div>
+        </div>
+        <div class="map-stat">
+          <span class="map-stat-num warning-color" id="msProgress">—</span>
+          <div class="map-stat-lbl">IN PROGRESS</div>
+        </div>
+        <div class="map-stat">
+          <span class="map-stat-num success-color" id="msResolved">—</span>
+          <div class="map-stat-lbl">RESOLVED</div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">FILTERS</div>
+        <div class="filter-row">
+          <select class="filter-select" id="filterType">
+            <option value="">All Types</option>
+            <option value="garbage">🗑️ Garbage Dump</option>
+            <option value="waterlogging">💧 Waterlogging</option>
+            <option value="smell">😷 Bad Smell</option>
+            <option value="air">🌫️ Air Pollution</option>
+            <option value="drainage">🚰 Open Drainage</option>
+            <option value="road">⚠️ Unsafe Road</option>
+            <option value="smoke">🏭 Smoke Pollution</option>
+          </select>
+        </div>
+        <div class="filter-row">
+          <select class="filter-select" id="filterSeverity">
+            <option value="">All Severities</option>
+            <option value="low">🟢 Low</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="high">🔴 High</option>
+            <option value="critical">🚨 Critical</option>
+          </select>
+        </div>
+        <div class="filter-row">
+          <select class="filter-select" id="filterStatus">
+            <option value="">All Statuses</option>
+            <option value="active">🔴 Active</option>
+            <option value="in-progress">🟡 In Progress</option>
+            <option value="resolved">🟢 Resolved</option>
+          </select>
+        </div>
+        <button class="btn btn-ghost w-full mt-2" id="clearFilters">✕ Clear Filters</button>
+      </div>
+
+      <!-- Map Tools -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">MAP TOOLS</div>
+        <div class="map-tools">
+          <button class="map-tool-btn" id="locateMe">
+            <span class="tool-icon">📍</span>
+            <span class="tool-label">Locate Me</span>
+          </button>
+          <button class="map-tool-btn" id="toggleHeatmap">
+            <span class="tool-icon">🔥</span>
+            <span class="tool-label">Heatmap</span>
+          </button>
+          <button class="map-tool-btn" id="toggleNearby">
+            <span class="tool-icon">🔔</span>
+            <span class="tool-label">Nearby</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Reports List -->
+      <div class="sidebar-section sidebar-reports">
+        <div class="sidebar-section-title">
+          <span>📋 REPORTS</span>
+          <span class="report-count-badge" id="reportCountBadge">0</span>
+        </div>
+        <div class="sidebar-report-list" id="sidebarReportList">
+          <div class="loading-centered"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ── Map Area ── -->
+    <div class="map-main">
+      <div id="mainMap"></div>
+
+      <!-- Mobile sidebar toggle -->
+      <button class="map-sidebar-toggle" id="sidebarToggle">☰ Reports</button>
+
+      <!-- Nearby Alert Banner -->
+      <div class="nearby-banner" id="nearbyBanner" style="display:none">
+        <span class="nearby-icon">⚠️</span>
+        <span id="nearbyBannerText"></span>
+        <button class="nearby-close" id="closeNearbyBanner" title="Dismiss">✕</button>
+      </div>
+
+      <!-- Report FAB -->
+      <div class="map-overlay-controls">
+        <a href="report.html" class="map-report-fab">
+          <span>📢</span> Report Issue
+        </a>
+      </div>
+    </div>
+
   </div>
 
-  <div id="map"></div>
-  
-  <div class="floating-btn">
-    <a href="report.html" class="btn btn-primary">📢 Report Issue</a>
-  </div>
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
 
-  <script type="module">
-    import { initAuth, signOutUser } from '../js/auth.js';
-    import { fetchReports } from '../js/reports.js';
-    import { initDarkMode, toggleDarkMode } from '../js/utils.js';
-
-    initDarkMode();
-    
-    const darkToggle = document.getElementById('darkToggle');
-    const logoutBtn = document.getElementById('logoutBtn');
-    
-    if (darkToggle) {
-      darkToggle.addEventListener('click', () => {
-        const isDark = toggleDarkMode();
-        darkToggle.textContent = isDark ? '☀️' : '🌙';
-      });
-    }
-    
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', async () => {
-        await signOutUser();
-      });
-    }
-    
-    let map;
-    let markers = [];
-    let allReports = [];
-    
-    function initMap() {
-      map = L.map('map').setView([19.076, 72.877], 12);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
-    }
-    
-    function clearMarkers() {
-      markers.forEach(m => map.removeLayer(m));
-      markers = [];
-    }
-    
-    function addMarkers() {
-      clearMarkers();
-      
-      const typeFilter = document.getElementById('typeFilter').value;
-      const severityFilter = document.getElementById('severityFilter').value;
-      
-      let filtered = allReports;
-      if (typeFilter) filtered = filtered.filter(r => r.type === typeFilter);
-      if (severityFilter) filtered = filtered.filter(r => r.severity === severityFilter);
-      
-      filtered.forEach(report => {
-        if (report.location?.lat && report.location?.lng) {
-          const color = report.severity === 'critical' ? '#B71C1C' :
-                       report.severity === 'high' ? '#F44336' :
-                       report.severity === 'medium' ? '#FF9800' : '#4CAF50';
-          
-          const marker = L.marker([report.location.lat, report.location.lng]).addTo(map);
-          marker.bindPopup(`
-            <strong>${report.type}</strong><br>
-            ${report.description?.substring(0, 150)}<br>
-            <span style="color:${color}">⚠️ ${report.severity}</span><br>
-            <small>📍 ${report.location?.address?.substring(0, 50) || 'Unknown'}</small>
-          `);
-          markers.push(marker);
-        }
-      });
-    }
-    
-    async function loadReports() {
-      allReports = await fetchReports();
-      addMarkers();
-    }
-    
-    initAuth((user) => {
-      if (!user) {
-        window.location.href = '../index.html';
-        return;
-      }
-      initMap();
-      loadReports();
-      
-      document.getElementById('typeFilter').addEventListener('change', addMarkers);
-      document.getElementById('severityFilter').addEventListener('change', addMarkers);
-    });
-  </script>
+  <script type="module" src="../js/pages/map-page.js"></script>
 </body>
 </html>

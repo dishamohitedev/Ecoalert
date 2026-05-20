@@ -32,6 +32,7 @@
       background: linear-gradient(135deg, var(--accent-green), var(--accent-lime));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     .quick-stat-label {
       font-size: 0.75rem;
@@ -75,6 +76,41 @@
       border-radius: 20px;
       margin-bottom: 24px;
     }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .badge-critical { background: #B71C1C20; color: #B71C1C; }
+    .badge-high { background: #F4433620; color: #F44336; }
+    .badge-medium { background: #FF980020; color: #FF9800; }
+    .badge-low { background: #4CAF5020; color: #4CAF50; }
+    .badge-active { background: #F4433620; color: #F44336; }
+    .badge-resolved { background: #4CAF5020; color: #4CAF50; }
+    
+    /* User avatar in navbar */
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-glass-2);
+      padding: 6px 16px 6px 12px;
+      border-radius: 40px;
+      border: 1px solid var(--border-glass);
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .user-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
   </style>
 </head>
 <body>
@@ -82,7 +118,10 @@
     <a href="../index.html" class="nav-logo"><span class="logo-leaf">🌿</span> EcoAlert</a>
     <div class="nav-actions">
       <button class="dark-mode-toggle" id="darkToggle">🌙</button>
-      <span style="background:#2d7a2d;padding:6px 12px;border-radius:20px;font-size:0.8rem;">👤 Citizen</span>
+      <div class="user-info" id="userInfo">
+        <img class="user-avatar" id="userAvatar" src="" alt="Avatar">
+        <span class="user-name" id="userName">Loading...</span>
+      </div>
       <button class="btn btn-sm btn-logout" id="logoutBtn">Sign Out</button>
     </div>
   </nav>
@@ -91,26 +130,26 @@
     <div class="container">
       <div class="section-header">
         <h1 class="section-title">🏠 Citizen Dashboard</h1>
-        <p class="section-subtitle">Welcome back! Here's what's happening in your community</p>
+        <p class="section-subtitle" id="welcomeMsg">Loading...</p>
       </div>
 
       <!-- Quick Stats -->
       <div class="quick-stats">
         <div class="quick-stat-card">
-          <div class="quick-stat-number" id="statTotal">—</div>
+          <div class="quick-stat-number" id="statTotal">0</div>
           <div class="quick-stat-label">Total Reports</div>
         </div>
         <div class="quick-stat-card">
-          <div class="quick-stat-number" id="statActive">—</div>
+          <div class="quick-stat-number" id="statActive">0</div>
           <div class="quick-stat-label">Active Issues</div>
         </div>
         <div class="quick-stat-card">
-          <div class="quick-stat-number" id="statResolved">—</div>
+          <div class="quick-stat-number" id="statResolved">0</div>
           <div class="quick-stat-label">Resolved</div>
         </div>
         <div class="quick-stat-card">
-          <div class="quick-stat-number" id="statUpvotes">—</div>
-          <div class="quick-stat-label">Your Upvotes</div>
+          <div class="quick-stat-number" id="statUpvotes">0</div>
+          <div class="quick-stat-label">Total Upvotes</div>
         </div>
       </div>
 
@@ -125,7 +164,7 @@
 
       <!-- Recent Reports -->
       <div class="card">
-        <h3 style="margin-bottom: 16px;">📋 Recent Reports Near You</h3>
+        <h3 style="margin-bottom: 16px;">📋 Recent Reports</h3>
         <div id="reportsList">
           <div class="loading-spinner"><div class="spinner"></div></div>
         </div>
@@ -138,69 +177,88 @@
     import { fetchReports, upvoteReport } from '../js/reports.js';
     import { initDarkMode, toggleDarkMode, showToast, timeAgo } from '../js/utils.js';
 
-    // Initialize
+    // Initialize dark mode
     initDarkMode();
     
     // DOM elements
     const darkToggle = document.getElementById('darkToggle');
     const logoutBtn = document.getElementById('logoutBtn');
+    const userAvatar = document.getElementById('userAvatar');
+    const userNameSpan = document.getElementById('userName');
     
-    // Dark mode
+    // Fix Dark Mode Toggle
     if (darkToggle) {
-      darkToggle.addEventListener('click', () => {
+      const newDarkToggle = darkToggle.cloneNode(true);
+      darkToggle.parentNode.replaceChild(newDarkToggle, darkToggle);
+      
+      newDarkToggle.addEventListener('click', (e) => {
+        e.preventDefault();
         const isDark = toggleDarkMode();
-        darkToggle.textContent = isDark ? '☀️' : '🌙';
+        newDarkToggle.textContent = isDark ? '☀️' : '🌙';
       });
     }
     
     // Logout
     if (logoutBtn) {
-      logoutBtn.addEventListener('click', async () => {
+      const newLogoutBtn = logoutBtn.cloneNode(true);
+      logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+      
+      newLogoutBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
         await signOutUser();
       });
     }
     
+    let map = null;
+    let markers = [];
+    
     // Initialize map
-    let map;
     function initMap() {
+      if (map) return;
       map = L.map('map').setView([19.076, 72.877], 12);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
       }).addTo(map);
     }
     
+    // Clear markers
+    function clearMarkers() {
+      if (!map) return;
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+    }
+    
     // Add markers to map
     function addMarkersToMap(reports) {
       if (!map) return;
+      clearMarkers();
       
-      // Clear existing markers
-      map.eachLayer((layer) => {
-        if (layer instanceof L.Marker) {
-          map.removeLayer(layer);
-        }
-      });
-      
-      const activeReports = reports.filter(r => r.status !== 'resolved').slice(0, 20);
+      const activeReports = reports.filter(r => r.status !== 'resolved').slice(0, 30);
       
       activeReports.forEach(report => {
         if (report.location?.lat && report.location?.lng) {
-          const color = report.severity === 'critical' ? 'red' : 
-                       report.severity === 'high' ? 'orange' : 
-                       report.severity === 'medium' ? 'yellow' : 'green';
+          let color = '#4CAF50';
+          if (report.severity === 'critical') color = '#B71C1C';
+          else if (report.severity === 'high') color = '#F44336';
+          else if (report.severity === 'medium') color = '#FF9800';
           
           const marker = L.marker([report.location.lat, report.location.lng]).addTo(map);
           marker.bindPopup(`
-            <strong>${report.type}</strong><br>
-            ${report.description?.substring(0, 100)}<br>
-            <span style="color:${color}">⚠️ ${report.severity}</span><br>
-            <button onclick="window.upvote('${report.id}')">👍 ${report.upvotes || 0}</button>
+            <div style="min-width: 200px;">
+              <strong>${report.type || 'Issue'}</strong><br>
+              ${report.description?.substring(0, 100) || ''}<br>
+              <span style="color:${color}">⚠️ ${report.severity || 'Unknown'}</span><br>
+              <small>📍 ${report.location?.address?.substring(0, 50) || 'Unknown'}</small><br>
+              <button onclick="window.handleUpvote('${report.id}')" style="margin-top:5px;padding:4px 8px;cursor:pointer;">👍 ${report.upvotes || 0} Upvotes</button>
+            </div>
           `);
+          markers.push(marker);
         }
       });
     }
     
     // Make upvote available globally
-    window.upvote = async (reportId) => {
+    window.handleUpvote = async (reportId) => {
       await upvoteReport(reportId);
       loadData();
     };
@@ -211,51 +269,87 @@
         const reports = await fetchReports();
         const user = getCurrentUser();
         
-        // Update stats
-        document.getElementById('statTotal').textContent = reports.length;
-        document.getElementById('statActive').textContent = reports.filter(r => r.status === 'active').length;
-        document.getElementById('statResolved').textContent = reports.filter(r => r.status === 'resolved').length;
+        // Update user info in navbar
+        if (user) {
+          const displayName = user.displayName || user.email?.split('@')[0] || 'Citizen';
+          userNameSpan.textContent = displayName;
+          if (user.photoURL) {
+            userAvatar.src = user.photoURL;
+          } else {
+            // Create initial avatar if no photo
+            const initial = displayName.charAt(0).toUpperCase();
+            userAvatar.src = `https://ui-avatars.com/api/?name=${initial}&background=2d7a2d&color=fff`;
+          }
+        }
         
-        // Get user's upvotes (simplified)
+        // Update stats
+        const total = reports.length;
+        const active = reports.filter(r => r.status === 'active').length;
+        const resolved = reports.filter(r => r.status === 'resolved').length;
+        
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statActive').textContent = active;
+        document.getElementById('statResolved').textContent = resolved;
+        
+        // Calculate user's total upvotes received
         const userReports = reports.filter(r => r.userId === user?.uid);
         const totalUpvotes = userReports.reduce((sum, r) => sum + (r.upvotes || 0), 0);
         document.getElementById('statUpvotes').textContent = totalUpvotes;
+        
+        // Update welcome message
+        const welcomeMsg = document.getElementById('welcomeMsg');
+        if (welcomeMsg && user) {
+          const name = user.displayName || user.email?.split('@')[0] || 'Citizen';
+          welcomeMsg.textContent = `Welcome back, ${name}! You've made ${userReports.length} report${userReports.length !== 1 ? 's' : ''}.`;
+        }
         
         // Add markers to map
         addMarkersToMap(reports);
         
         // Render recent reports list
         const reportsList = document.getElementById('reportsList');
-        const recentReports = reports.slice(0, 10);
+        const recentReports = [...reports].sort((a, b) => {
+          const aTime = a.createdAt?.seconds || 0;
+          const bTime = b.createdAt?.seconds || 0;
+          return bTime - aTime;
+        }).slice(0, 15);
         
         if (recentReports.length === 0) {
-          reportsList.innerHTML = '<div style="padding:40px;text-align:center">No reports yet. Be the first to report!</div>';
+          reportsList.innerHTML = '<div style="padding:40px;text-align:center">No reports yet. Be the first to report an issue!</div>';
           return;
         }
         
-        reportsList.innerHTML = recentReports.map(r => `
-          <div class="report-item" onclick="window.location.href='map.html?reportId=${r.id}'">
-            <div style="display:flex;justify-content:space-between;align-items:start">
-              <div>
-                <strong style="font-size:1rem;">${r.type || 'Issue'}</strong>
-                <span class="badge badge-severity-${r.severity}" style="margin-left:8px;">${r.severity}</span>
-                <span class="badge badge-status-${r.status}" style="margin-left:8px;">${r.status}</span>
+        reportsList.innerHTML = recentReports.map(r => {
+          const severityClass = `badge-${r.severity || 'medium'}`;
+          const statusClass = `badge-${r.status === 'resolved' ? 'resolved' : 'active'}`;
+          const isUserReport = r.userId === user?.uid;
+          
+          return `
+            <div class="report-item" onclick="window.location.href='map.html?reportId=${r.id}'">
+              <div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:8px;">
+                <div>
+                  <strong style="font-size:1rem;">${r.type || 'Issue'}</strong>
+                  <span class="badge ${severityClass}" style="margin-left:8px;">${r.severity || 'Medium'}</span>
+                  <span class="badge ${statusClass}" style="margin-left:8px;">${r.status || 'Active'}</span>
+                  ${isUserReport ? '<span class="badge" style="background:#2196F320;color:#2196F3;">📝 Your Report</span>' : ''}
+                </div>
+                <button onclick="event.stopPropagation(); window.handleUpvote('${r.id}')" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:4px 8px;border-radius:20px;">
+                  👍 ${r.upvotes || 0}
+                </button>
               </div>
-              <button onclick="event.stopPropagation(); window.upvote('${r.id}')" style="background:none;border:none;cursor:pointer;font-size:1rem;">
-                👍 ${r.upvotes || 0}
-              </button>
+              <p style="margin:8px 0;color:var(--text-secondary);font-size:0.85rem;">${r.description?.substring(0, 120) || 'No description'}</p>
+              <div style="display:flex;gap:16px;font-size:0.7rem;color:var(--text-muted);flex-wrap:wrap;">
+                <span>📍 ${r.location?.address?.substring(0, 50) || 'Unknown location'}</span>
+                <span>🕐 ${timeAgo(r.createdAt)}</span>
+                <span>👤 ${r.userName || 'Anonymous'}</span>
+              </div>
             </div>
-            <p style="margin:8px 0;color:var(--text-secondary);font-size:0.85rem;">${r.description?.substring(0, 120)}${r.description?.length > 120 ? '...' : ''}</p>
-            <div style="display:flex;gap:16px;font-size:0.7rem;color:var(--text-muted)">
-              <span>📍 ${r.location?.address?.substring(0, 40) || 'Unknown'}</span>
-              <span>🕐 ${timeAgo(r.createdAt)}</span>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
         
       } catch (error) {
         console.error('Error loading data:', error);
-        document.getElementById('reportsList').innerHTML = '<div style="padding:40px;text-align:center">Error loading reports. Please refresh.</div>';
+        document.getElementById('reportsList').innerHTML = '<div style="padding:40px;text-align:center;color:red;">Error loading reports. Please refresh the page.</div>';
       }
     }
     
@@ -265,8 +359,11 @@
         window.location.href = '../index.html';
         return;
       }
-      initMap();
-      loadData();
+      
+      setTimeout(() => {
+        initMap();
+        loadData();
+      }, 100);
     });
   </script>
 </body>

@@ -1,5 +1,5 @@
 // ============================================================
-// EcoAlert - Reports Database Module (With Government Actions)
+// EcoAlert - Reports Database Module (COMPLETE WORKING VERSION)
 // ============================================================
 
 import { db, auth, collection, addDoc, getDocs, getDoc, doc, setDoc, updateDoc,
@@ -17,11 +17,11 @@ const ACTIONS_COLLECTION = 'government_actions';
 
 // Action status types
 export const ACTION_STATUS = {
-  PENDING: 'pending',           // Waiting for admin confirmation
-  APPROVED: 'approved',         // Admin approved
-  REJECTED: 'rejected',         // Admin rejected
-  IN_PROGRESS: 'in_progress',   // Started by government
-  COMPLETED: 'completed'        // Completed by government
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+  IN_PROGRESS: 'in_progress',
+  COMPLETED: 'completed'
 };
 
 // ─── Submit New Report ────────────────────────────────────
@@ -75,8 +75,10 @@ export async function submitReport(reportData, imageFile) {
   }
 }
 
-// ─── Get All Reports (Live) - FIXED: This was missing! ────
+// ─── Get All Reports (Live) ─────────────────────────────────
 export function listenToReports(callback) {
+  console.log('listenToReports called, IS_FIREBASE_CONFIGURED:', IS_FIREBASE_CONFIGURED);
+  
   if (!IS_FIREBASE_CONFIGURED) {
     console.log('⚠️ Firebase not configured — using dummy reports:', DUMMY_REPORTS.length);
     callback([...DUMMY_REPORTS]);
@@ -107,11 +109,161 @@ export function listenToReports(callback) {
 
   }, (error) => {
     console.error('❌ Firestore error:', error.message);
+    console.log('Falling back to dummy reports');
     callback([...DUMMY_REPORTS]);
   });
 }
 
-// ─── Government Action: Start Work ─────────────────────────
+// ─── Get All Reports (One-time) - FIXED ─────────────────────
+export async function fetchReports(filters = {}) {
+  console.log('fetchReports called, IS_FIREBASE_CONFIGURED:', IS_FIREBASE_CONFIGURED);
+  
+  if (!IS_FIREBASE_CONFIGURED) {
+    console.log('Using dummy reports:', DUMMY_REPORTS.length);
+    return [...DUMMY_REPORTS];
+  }
+
+  try {
+    console.log('Fetching reports from Firestore...');
+    const q = query(collection(db, REPORTS_COLLECTION), where('isDeleted', '==', false));
+    const snap = await getDocs(q);
+    
+    console.log('Firestore query completed, docs count:', snap.size);
+    
+    let reports = snap.docs.map(d => {
+      const data = d.data();
+      console.log('Report doc:', d.id, 'type:', data.type, 'location:', data.location);
+      return { id: d.id, ...data };
+    });
+    
+    console.log('Total reports fetched:', reports.length);
+    
+    // Apply filters
+    if (filters.type) reports = reports.filter(r => r.type === filters.type);
+    if (filters.severity) reports = reports.filter(r => r.severity === filters.severity);
+    if (filters.status) reports = reports.filter(r => r.status === filters.status);
+    
+    // If no reports in Firestore, return dummy data
+    if (reports.length === 0) {
+      console.log('No reports in Firestore, using dummy data');
+      return [...DUMMY_REPORTS];
+    }
+    
+    return reports;
+  } catch (error) {
+    console.error('fetchReports error:', error);
+    console.log('Falling back to dummy reports');
+    return [...DUMMY_REPORTS];
+  }
+}
+
+// ─── Get Single Report ─────────────────────────────────────
+export async function getReport(reportId) {
+  if (!IS_FIREBASE_CONFIGURED) return DUMMY_REPORTS.find(r => r.id === reportId) || null;
+  
+  try {
+    const snap = await getDoc(doc(db, REPORTS_COLLECTION, reportId));
+    if (!snap.exists()) throw new Error('Report not found');
+    return { id: snap.id, ...snap.data() };
+  } catch (error) {
+    console.error('getReport error:', error);
+    return DUMMY_REPORTS.find(r => r.id === reportId) || null;
+  }
+}
+
+// ─── Upvote Report ─────────────────────────────────────────
+export async function upvoteReport(reportId) {
+  const user = auth.currentUser;
+  if (!user) { 
+    showToast('Sign in to upvote', 'warning'); 
+    return; 
+  }
+  
+  if (!IS_FIREBASE_CONFIGURED) { 
+    showToast('Upvote available in live mode', 'info'); 
+    return; 
+  }
+
+  try {
+    const reportRef = doc(db, REPORTS_COLLECTION, reportId);
+    const snap = await getDoc(reportRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    const hasUpvoted = data.upvotedBy?.includes(user.uid);
+
+    if (hasUpvoted) {
+      await updateDoc(reportRef, { upvotes: increment(-1), upvotedBy: arrayRemove(user.uid) });
+      showToast('Upvote removed', 'info');
+    } else {
+      await updateDoc(reportRef, { upvotes: increment(1), upvotedBy: arrayUnion(user.uid) });
+      showToast('Report verified! 👍', 'success');
+    }
+  } catch (error) {
+    console.error('Upvote error:', error);
+    showToast('Failed to upvote', 'error');
+  }
+}
+
+// ─── Update Report Status ──────────────────────────────────
+export async function updateReportStatus(reportId, status) {
+  if (!IS_FIREBASE_CONFIGURED) return;
+  await updateDoc(doc(db, REPORTS_COLLECTION, reportId), { 
+    status, 
+    updatedAt: serverTimestamp() 
+  });
+  showToast(`Status updated to ${status}`, 'success');
+}
+
+// ─── Delete Report ─────────────────────────────────────────
+export async function deleteReport(reportId) {
+  if (!IS_FIREBASE_CONFIGURED) return;
+  await updateDoc(doc(db, REPORTS_COLLECTION, reportId), { 
+    isDeleted: true, 
+    updatedAt: serverTimestamp() 
+  });
+  showToast('Report deleted', 'success');
+}
+
+// ─── Get User Reports ──────────────────────────────────────
+export async function getUserReports(userId) {
+  if (!IS_FIREBASE_CONFIGURED) return DUMMY_REPORTS.filter(r => r.userId === userId);
+  
+  try {
+    const q = query(
+      collection(db, REPORTS_COLLECTION),
+      where('userId', '==', userId),
+      where('isDeleted', '==', false)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.error('getUserReports error:', error);
+    return DUMMY_REPORTS.filter(r => r.userId === userId);
+  }
+}
+
+// ─── Get Analytics Data ────────────────────────────────────
+export async function getAnalytics() {
+  const reports = await fetchReports();
+  return {
+    total: reports.length,
+    active: reports.filter(r => r.status === 'active').length,
+    inProgress: reports.filter(r => r.status === 'in-progress').length,
+    resolved: reports.filter(r => r.status === 'resolved').length,
+    critical: reports.filter(r => r.severity === 'critical').length,
+    byType: reports.reduce((acc, r) => {
+      acc[r.type] = (acc[r.type] || 0) + 1;
+      return acc;
+    }, {}),
+    bySeverity: reports.reduce((acc, r) => {
+      acc[r.severity] = (acc[r.severity] || 0) + 1;
+      return acc;
+    }, {})
+  };
+}
+
+// ─── Government Action Functions ───────────────────────────
 export async function startGovernmentAction(reportId, notes = '') {
   const user = auth.currentUser;
   if (!user) throw new Error('Not authenticated');
@@ -146,7 +298,6 @@ export async function startGovernmentAction(reportId, notes = '') {
     });
   }
   
-  // Update report status
   await updateDoc(doc(db, REPORTS_COLLECTION, reportId), {
     governmentStatus: ACTION_STATUS.PENDING,
     updatedAt: serverTimestamp()
@@ -155,7 +306,6 @@ export async function startGovernmentAction(reportId, notes = '') {
   showToast('Action marked as started! Waiting for admin confirmation.', 'success');
 }
 
-// ─── Government Action: Mark Completed ─────────────────────
 export async function completeGovernmentAction(reportId, afterPhotoFile = null, completionNotes = '') {
   const user = auth.currentUser;
   if (!user) throw new Error('Not authenticated');
@@ -195,7 +345,6 @@ export async function completeGovernmentAction(reportId, afterPhotoFile = null, 
   showToast('Completion marked! Waiting for admin confirmation.', 'success');
 }
 
-// ─── Admin: Confirm Government Action ──────────────────────
 export async function confirmGovernmentAction(reportId, approved, adminNotes = '') {
   const user = auth.currentUser;
   if (!user) throw new Error('Not authenticated');
@@ -226,7 +375,6 @@ export async function confirmGovernmentAction(reportId, approved, adminNotes = '
   showToast(approved ? 'Action confirmed and approved! ✅' : 'Action rejected ❌', 'info');
 }
 
-// ─── Get Government Action for a Report ────────────────────
 export async function getGovernmentAction(reportId) {
   try {
     const actionRef = doc(db, ACTIONS_COLLECTION, reportId);
@@ -240,7 +388,6 @@ export async function getGovernmentAction(reportId) {
   }
 }
 
-// ─── Get All Reports with Government Actions ───────────────
 export function listenToReportsWithActions(callback) {
   if (!IS_FIREBASE_CONFIGURED) {
     callback(DUMMY_REPORTS.map(r => ({ ...r, governmentAction: null })));
@@ -270,84 +417,4 @@ export function listenToReportsWithActions(callback) {
     console.error('Firestore error:', error);
     callback(DUMMY_REPORTS.map(r => ({ ...r, governmentAction: null })));
   });
-}
-
-// ─── Get Reports for Government Dashboard ──────────────────
-export function listenToGovernmentReports(callback) {
-  return listenToReportsWithActions(callback);
-}
-
-// ─── Get All Reports (One-time) ─────────────────────────────
-export async function fetchReports(filters = {}) {
-  if (!IS_FIREBASE_CONFIGURED) return [...DUMMY_REPORTS];
-
-  try {
-    const q = query(collection(db, REPORTS_COLLECTION), where('isDeleted', '==', false));
-    const snap = await getDocs(q);
-    let reports = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    
-    if (filters.type) reports = reports.filter(r => r.type === filters.type);
-    if (filters.severity) reports = reports.filter(r => r.severity === filters.severity);
-    if (filters.status) reports = reports.filter(r => r.status === filters.status);
-    
-    return reports;
-  } catch (error) {
-    return [...DUMMY_REPORTS];
-  }
-}
-
-// ─── Update Report Status ──────────────────────────────────
-export async function updateReportStatus(reportId, status) {
-  if (!IS_FIREBASE_CONFIGURED) return;
-  await updateDoc(doc(db, REPORTS_COLLECTION, reportId), { 
-    status, 
-    updatedAt: serverTimestamp() 
-  });
-  showToast(`Status updated to ${status}`, 'success');
-}
-
-// ─── Delete Report ─────────────────────────────────────────
-export async function deleteReport(reportId) {
-  if (!IS_FIREBASE_CONFIGURED) return;
-  await updateDoc(doc(db, REPORTS_COLLECTION, reportId), { 
-    isDeleted: true, 
-    updatedAt: serverTimestamp() 
-  });
-  showToast('Report deleted', 'success');
-}
-
-// ─── Get User Reports ──────────────────────────────────────
-export async function getUserReports(userId) {
-  if (!IS_FIREBASE_CONFIGURED) return DUMMY_REPORTS.filter(r => r.userId === userId);
-  try {
-    const q = query(
-      collection(db, REPORTS_COLLECTION),
-      where('userId', '==', userId),
-      where('isDeleted', '==', false)
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch {
-    return DUMMY_REPORTS.filter(r => r.userId === userId);
-  }
-}
-
-// ─── Get Analytics Data ────────────────────────────────────
-export async function getAnalytics() {
-  const reports = await fetchReports();
-  return {
-    total: reports.length,
-    active: reports.filter(r => r.status === 'active').length,
-    inProgress: reports.filter(r => r.status === 'in-progress').length,
-    resolved: reports.filter(r => r.status === 'resolved').length,
-    critical: reports.filter(r => r.severity === 'critical').length,
-    byType: reports.reduce((acc, r) => {
-      acc[r.type] = (acc[r.type] || 0) + 1;
-      return acc;
-    }, {}),
-    bySeverity: reports.reduce((acc, r) => {
-      acc[r.severity] = (acc[r.severity] || 0) + 1;
-      return acc;
-    }, {})
-  };
 }
