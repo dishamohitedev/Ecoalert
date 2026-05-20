@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — EcoAlert</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" />
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  <link rel="stylesheet" href="../css/auth-modal.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a href="../index.html" class="nav-logo"><span class="logo-leaf">🌿</span> EcoAlert</a>
+    <div class="nav-actions">
+      <button class="dark-mode-toggle" id="darkToggle">🌙</button>
+      <span class="user-role-badge" style="background:#B71C1C;padding:6px 12px;border-radius:20px;font-size:0.8rem;">👑 Admin</span>
+      <button class="btn btn-sm btn-logout" id="logoutBtn">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="page-wrapper page-content">
+    <div class="container">
+      <div class="admin-header">
+        <div>
+          <h1 class="section-title">👑 Admin Dashboard</h1>
+          <p class="section-subtitle">Oversee all reports and government actions</p>
+        </div>
+        <div class="admin-live-indicator"><span class="live-dot"></span> Live Updates</div>
+      </div>
+
+      <div class="stats-grid mb-4">
+        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-number" id="adminTotal">—</div><div class="stat-label">Total Reports</div></div>
+        <div class="stat-card"><div class="stat-icon">🟡</div><div class="stat-number" id="adminPendingGov">—</div><div class="stat-label">Pending Gov Action</div></div>
+        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-number" id="adminWaitingConfirm">—</div><div class="stat-label">Waiting Confirmation</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-number" id="adminApproved">—</div><div class="stat-label">Approved</div></div>
+      </div>
+
+      <div class="card">
+        <div class="table-header">
+          <h3>📋 All Reports & Actions</h3>
+          <div class="table-filters">
+            <select class="filter-select" id="adminFilterStatus">
+              <option value="all">All Reports</option>
+              <option value="pending_action">Pending Government Action</option>
+              <option value="waiting_confirmation">Waiting Admin Confirmation</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-reports-list" id="adminReportsList">
+          <div class="loading-centered"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="confirmModal" style="display:none">
+    <div class="modal glass-panel" style="max-width:500px">
+      <h3 class="modal-title" id="confirmModalTitle">Confirm Government Action</h3>
+      <div class="modal-body">
+        <p id="confirmModalBody"></p>
+        <div class="form-group">
+          <label class="form-label">Admin Notes</label>
+          <textarea class="form-control" id="adminNotes" rows="3" placeholder="Add your remarks..."></textarea>
+        </div>
+        <div id="actionImages" style="margin-top:16px"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-danger" id="rejectActionBtn">❌ Reject</button>
+        <button class="btn btn-primary" id="approveActionBtn">✅ Approve</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/pages/admin-dashboard.js"></script>
+</body>
+</html>

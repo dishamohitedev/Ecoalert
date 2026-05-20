@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Government Dashboard — EcoAlert</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" />
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+  <link rel="stylesheet" href="../css/auth-modal.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a href="../index.html" class="nav-logo"><span class="logo-leaf">🌿</span> EcoAlert</a>
+    <div class="nav-actions">
+      <button class="dark-mode-toggle" id="darkToggle">🌙</button>
+      <span class="user-role-badge" style="background:#FF9800;padding:6px 12px;border-radius:20px;font-size:0.8rem;">🏛️ Government Official</span>
+      <button class="btn btn-sm btn-logout" id="logoutBtn">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="page-wrapper page-content">
+    <div class="container">
+      <div class="admin-header">
+        <div>
+          <h1 class="section-title">🏛️ Government Dashboard</h1>
+          <p class="section-subtitle">Manage and resolve pollution reports in your jurisdiction</p>
+        </div>
+        <div class="admin-live-indicator"><span class="live-dot"></span> Live Updates</div>
+      </div>
+
+      <div class="stats-grid mb-4">
+        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-number" id="govTotal">—</div><div class="stat-label">Total Reports</div></div>
+        <div class="stat-card"><div class="stat-icon">🟡</div><div class="stat-number" id="govPending">—</div><div class="stat-label">Pending Action</div></div>
+        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-number" id="govWaitingConfirm">—</div><div class="stat-label">Waiting Admin Confirm</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-number" id="govCompleted">—</div><div class="stat-label">Completed</div></div>
+      </div>
+
+      <div class="card">
+        <div class="table-header">
+          <h3>📋 Reports Requiring Action</h3>
+          <div class="table-filters">
+            <select class="filter-select" id="govFilterStatus">
+              <option value="all">All Reports</option>
+              <option value="pending">Pending Action</option>
+              <option value="waiting">Waiting Admin Confirmation</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-reports-list" id="govReportsList">
+          <div class="loading-centered"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Modal -->
+  <div class="modal-overlay" id="actionModal" style="display:none">
+    <div class="modal glass-panel" style="max-width:500px">
+      <h3 class="modal-title" id="actionModalTitle">Take Action</h3>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Notes / Remarks</label>
+          <textarea class="form-control" id="actionNotes" rows="3" placeholder="Add any relevant notes..."></textarea>
+        </div>
+        <div class="form-group" id="photoUploadGroup" style="display:none">
+          <label class="form-label">Upload Evidence Photo</label>
+          <input type="file" id="actionPhoto" accept="image/*" class="form-control">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="closeModalBtn">Cancel</button>
+        <button class="btn btn-primary" id="confirmActionBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/pages/government-dashboard.js"></script>
+</body>
+</html>

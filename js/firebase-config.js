@@ -12,7 +12,7 @@ const FIREBASE_CONFIG = {
 };
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc,
   query, where, orderBy, limit, onSnapshot, serverTimestamp, increment, arrayUnion, arrayRemove }
@@ -26,14 +26,13 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
-// ✅ Tells reports.js to use real Firebase instead of dummy data
 export const IS_FIREBASE_CONFIGURED = true;
 
 console.log("✅ Firebase initialized!");
 
 export {
   auth, db, storage, googleProvider,
-  signInWithPopup, signOut, onAuthStateChanged,
+  signInWithPopup, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
   collection, addDoc, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc,
   query, where, orderBy, limit, onSnapshot, serverTimestamp, increment, arrayUnion, arrayRemove,
   ref, uploadBytes, getDownloadURL

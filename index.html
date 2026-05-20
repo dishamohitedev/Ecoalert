@@ -1,190 +1,563 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EcoAlert — Pollution & Unsafe Area Reporting</title>
-    <meta
-      name="description"
-      content="Report polluted and unsafe areas in your city. Help your community stay safe."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
-    />
-    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="css/main.css" />
-    <link rel="stylesheet" href="css/index.css" />
-    <link rel="stylesheet" href="css/auth-modal.css" />
-  </head>
-  <body>
-    <nav class="navbar">
-      <a href="index.html" class="nav-logo"
-        ><span class="logo-leaf">🌿</span> EcoAlert</a
-      >
-      <div class="nav-actions" style="margin-left: auto">
-        <button
-          class="dark-mode-toggle"
-          id="darkToggle"
-          title="Toggle dark mode"
-        >
-          🌙
-        </button>
-        <button class="btn btn-sm btn-login" id="loginBtn">Sign In</button>
-        <button class="btn btn-sm btn-logout" id="logoutBtn" style="display: none">Sign Out</button>
-      </div>
-    </nav>
-
-    <div class="page-wrapper">
-      <section class="hero">
-        <div class="hero-bg-orbs">
-          <div class="orb orb-1"></div>
-          <div class="orb orb-2"></div>
-          <div class="orb orb-3"></div>
-        </div>
-        <div class="container hero-content">
-          <div class="hero-badge fade-in">🌍 Community-Powered Reporting</div>
-          <h1 class="hero-title slide-up stagger-1">
-            Make Your City<br /><span class="gradient-text"
-              >Cleaner & Safer</span
-            >
-          </h1>
-          <p class="hero-subtitle slide-up stagger-2">
-            Report pollution, garbage dumps, unsafe roads, and more. Together we
-            build a cleaner community — one report at a time.
-          </p>
-          <div class="hero-actions slide-up stagger-3">
-            <a href="pages/report.html" class="btn btn-primary btn-lg" id="heroReportBtn">
-              <span>📢</span> Report an Issue
-            </a>
-            <a href="pages/map.html" class="btn btn-ghost btn-lg">
-              <span>🗺️</span> View Live Map
-            </a>
-          </div>
-          <div class="hero-stats slide-up stagger-4">
-            <div class="hero-stat">
-              <span class="hero-stat-num" id="totalReports">—</span>
-              <span class="hero-stat-label">Reports Filed</span>
-            </div>
-            <div class="hero-stat-divider"></div>
-            <div class="hero-stat">
-              <span class="hero-stat-num" id="resolvedCount">—</span>
-              <span class="hero-stat-label">Issues Resolved</span>
-            </div>
-            <div class="hero-stat-divider"></div>
-            <div class="hero-stat">
-              <span class="hero-stat-num" id="activeCount">—</span>
-              <span class="hero-stat-label">Active Alerts</span>
-            </div>
-          </div>
-        </div>
-        <div class="hero-scroll-hint">
-          <span>Scroll to explore</span>
-          <div class="scroll-arrow">↓</div>
-        </div>
-      </section>
-
-      <section class="section-issues">
-        <div class="container">
-          <div class="section-header text-center">
-            <h2 class="section-title">What Can You Report?</h2>
-            <p class="section-subtitle">
-              7 categories covering all major environmental hazards
-            </p>
-          </div>
-          <div class="issue-types-grid" id="issueTypesGrid"></div>
-        </div>
-      </section>
-
-      <section class="section-recent">
-        <div class="container">
-          <div class="section-header flex justify-between items-center">
-            <div>
-              <h2 class="section-title">Recent Reports</h2>
-              <p class="section-subtitle">Latest community alerts near you</p>
-            </div>
-            <a href="pages/map.html" class="btn btn-ghost btn-sm">View All →</a>
-          </div>
-          <div class="reports-grid" id="recentReportsGrid">
-            <div class="report-card-skeleton"></div>
-            <div class="report-card-skeleton"></div>
-            <div class="report-card-skeleton"></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section-how">
-        <div class="container">
-          <div class="section-header text-center">
-            <h2 class="section-title">How EcoAlert Works</h2>
-            <p class="section-subtitle">Three simple steps to a cleaner city</p>
-          </div>
-          <div class="how-steps">
-            <div class="how-step card fade-in stagger-1">
-              <div class="how-step-num">01</div>
-              <div class="how-step-icon">📸</div>
-              <h3>Snap & Report</h3>
-              <p>
-                Take a photo of the issue, fill in details, and submit your
-                report in under 60 seconds.
-              </p>
-            </div>
-            <div class="how-step-arrow">→</div>
-            <div class="how-step card fade-in stagger-2">
-              <div class="how-step-num">02</div>
-              <div class="how-step-icon">🗺️</div>
-              <h3>Maps & Alerts</h3>
-              <p>
-                Your report appears live on the community map. Nearby residents
-                get notified instantly.
-              </p>
-            </div>
-            <div class="how-step-arrow">→</div>
-            <div class="how-step card fade-in stagger-3">
-              <div class="how-step-num">03</div>
-              <div class="how-step-icon">✅</div>
-              <h3>Track & Resolve</h3>
-              <p>
-                Authorities and admins update the status. See your report go
-                from Active → Resolved.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section-cta">
-        <div class="container">
-          <div class="cta-card glass-panel">
-            <div class="cta-content">
-              <h2 class="cta-title">Ready to Make a Difference?</h2>
-              <p class="cta-subtitle">
-                Join thousands of citizens building a cleaner, safer city.
-              </p>
-              <div class="cta-actions" id="ctaActions">
-                <a href="pages/report.html" class="btn btn-primary btn-lg" id="ctaReportBtn">Start Reporting Now</a>
-              </div>
-            </div>
-            <div class="cta-illustration">🌱🏙️🌿</div>
-          </div>
-        </div>
-      </section>
-
-      <footer class="footer">
-        <div class="container footer-inner">
-          <div class="footer-brand">
-            <span class="nav-logo">🌿 EcoAlert</span>
-            <p>Community-powered pollution reporting for a better tomorrow.</p>
-          </div>
-          <div class="footer-copy">
-            © 2026 EcoAlert. Built for a cleaner world.
-          </div>
-        </div>
-      </footer>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EcoAlert — Pollution & Unsafe Area Reporting</title>
+  <meta name="description" content="Report polluted and unsafe areas in your city. Help your community stay safe." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/index.css" />
+  <style>
+    /* Login Modal Styles */
+    .auth-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .auth-modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .auth-modal {
+      background: var(--bg-card);
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      padding: 32px 28px;
+      max-width: 420px;
+      width: 90%;
+      position: relative;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+    }
+    .auth-modal-overlay.open .auth-modal {
+      transform: scale(1);
+    }
+    .auth-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--bg-glass-2);
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition);
+    }
+    .auth-modal-close:hover {
+      background: var(--bg-glass);
+      color: var(--text-primary);
+    }
+    .auth-modal-logo {
+      text-align: center;
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+    .auth-modal-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 800;
+      text-align: center;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .auth-modal-sub {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    
+    /* Role Buttons - Only Government and Admin */
+    .role-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .role-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      border: none;
+    }
+    .role-btn.government {
+      background: linear-gradient(135deg, #FF9800, #FF5722);
+      color: white;
+    }
+    .role-btn.admin {
+      background: linear-gradient(135deg, #B71C1C, #F44336);
+      color: white;
+    }
+    .role-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.05);
+    }
+    
+    /* Citizen Google Button */
+    .citizen-google-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      padding: 14px 20px;
+      background: white;
+      border: 1px solid #dadce0;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #3c4043;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+    .citizen-google-btn:hover {
+      background: #f8f9fa;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .citizen-google-btn img {
+      width: 22px;
+      height: 22px;
+    }
+    
+    .login-form-container {
+      display: none;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .login-form-container input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-glass);
+      background: var(--bg-glass-2);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+    .login-form-container input:focus {
+      outline: none;
+      border-color: var(--accent-green);
+    }
+    .back-link {
+      text-align: center;
+      margin-top: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .back-link:hover {
+      color: var(--accent-green);
+    }
+    .auth-divider {
+      text-align: center;
+      margin: 20px 0;
+      position: relative;
+    }
+    .auth-divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+    .auth-divider span {
+      background: var(--bg-card);
+      padding: 0 12px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 1;
+    }
+    .auth-error-msg {
+      background: rgba(239,68,68,0.1);
+      border-left: 3px solid #ef4444;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      color: #ef4444;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .auth-error-msg.show {
+      display: block;
+    }
+    .spinner-sm {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .auth-footer-text {
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo"><span class="logo-leaf">🌿</span> EcoAlert</a>
+    <div class="nav-actions">
+      <button class="dark-mode-toggle" id="darkToggle">🌙</button>
+      <button class="btn btn-sm btn-login" id="loginBtn">Sign In</button>
+      <button class="btn btn-sm btn-logout" id="logoutBtn" style="display: none">Sign Out</button>
     </div>
+  </nav>
 
-    <script type="module" src="js/pages/index.js"></script>
-  </body>
+  <div class="page-wrapper">
+    <section class="hero">
+      <div class="hero-bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+      </div>
+      <div class="container hero-content">
+        <div class="hero-badge fade-in">🌍 Community-Powered Reporting</div>
+        <h1 class="hero-title slide-up stagger-1">Make Your City<br /><span class="gradient-text">Cleaner & Safer</span></h1>
+        <p class="hero-subtitle slide-up stagger-2">Report pollution, garbage dumps, unsafe roads, and more. Together we build a cleaner community — one report at a time.</p>
+        <div class="hero-actions slide-up stagger-3">
+          <a href="#" class="btn btn-primary btn-lg" id="heroReportBtn"><span>📢</span> Report an Issue</a>
+          <a href="pages/map.html" class="btn btn-ghost btn-lg"><span>🗺️</span> View Live Map</a>
+        </div>
+        <div class="hero-stats slide-up stagger-4">
+          <div class="hero-stat"><span class="hero-stat-num" id="totalReports">—</span><span class="hero-stat-label">Reports Filed</span></div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat"><span class="hero-stat-num" id="resolvedCount">—</span><span class="hero-stat-label">Issues Resolved</span></div>
+          <div class="hero-stat-divider"></div>
+          <div class="hero-stat"><span class="hero-stat-num" id="activeCount">—</span><span class="hero-stat-label">Active Alerts</span></div>
+        </div>
+      </div>
+      <div class="hero-scroll-hint"><span>Scroll to explore</span><div class="scroll-arrow">↓</div></div>
+    </section>
+
+    <section class="section-issues">
+      <div class="container">
+        <div class="section-header text-center">
+          <h2 class="section-title">What Can You Report?</h2>
+          <p class="section-subtitle">7 categories covering all major environmental hazards</p>
+        </div>
+        <div class="issue-types-grid" id="issueTypesGrid"></div>
+      </div>
+    </section>
+
+    <section class="section-recent">
+      <div class="container">
+        <div class="section-header flex justify-between items-center">
+          <div><h2 class="section-title">Recent Reports</h2><p class="section-subtitle">Latest community alerts near you</p></div>
+          <a href="pages/map.html" class="btn btn-ghost btn-sm">View All →</a>
+        </div>
+        <div class="reports-grid" id="recentReportsGrid"><div class="report-card-skeleton"></div><div class="report-card-skeleton"></div><div class="report-card-skeleton"></div></div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div class="footer-brand"><span class="nav-logo">🌿 EcoAlert</span><p>Community-powered pollution reporting for a better tomorrow.</p></div>
+        <div class="footer-copy">© 2026 EcoAlert. Built for a cleaner world.</div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="auth-modal-overlay" id="authModal">
+    <div class="auth-modal">
+      <button class="auth-modal-close" id="closeModal">✕</button>
+      <div class="auth-modal-logo">🌿</div>
+      <h2 class="auth-modal-title">Welcome to EcoAlert</h2>
+      <p class="auth-modal-sub">Choose how you want to login</p>
+      
+      <div class="auth-error-msg" id="authError"></div>
+      
+      <!-- Citizen Login - Google Button Only -->
+      <button class="citizen-google-btn" id="googleSignInBtn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+        🧑 Citizen - Sign in with Google
+      </button>
+      
+      <div class="auth-divider"><span>Government / Admin Access</span></div>
+      
+      <!-- Government & Admin Buttons -->
+      <div class="role-buttons" id="roleButtons">
+        <button class="role-btn government" onclick="selectRole('government')">🏛️ Government Official Login</button>
+        <button class="role-btn admin" onclick="selectRole('admin')">👑 Admin Login</button>
+      </div>
+      
+      <!-- Email/Password Form (shown when Government or Admin is selected) -->
+      <div id="loginFormContainer" class="login-form-container">
+        <input type="email" id="loginEmail" placeholder="Official Email Address" autocomplete="email">
+        <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+        <button class="role-btn" id="submitLoginBtn" style="width:100%">Login</button>
+        <div class="back-link" onclick="backToRoles()">← Back to login options</div>
+      </div>
+      
+      <p class="auth-footer-text">📍 Citizens: Use Google Sign-in<br>🏛️ Government & Admin: Use registered email & password</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initAuth, signOutUser, signInWithGoogle, signInWithEmail } from './js/auth.js';
+    import { initDarkMode, toggleDarkMode, showToast } from './js/utils.js';
+    
+    // Initialize dark mode
+    initDarkMode();
+    
+    // DOM Elements
+    const darkToggle = document.getElementById('darkToggle');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const heroReportBtn = document.getElementById('heroReportBtn');
+    const modal = document.getElementById('authModal');
+    const closeModal = document.getElementById('closeModal');
+    const roleButtonsDiv = document.getElementById('roleButtons');
+    const loginFormContainer = document.getElementById('loginFormContainer');
+    const submitLoginBtn = document.getElementById('submitLoginBtn');
+    const googleSignInBtn = document.getElementById('googleSignInBtn');
+    const authError = document.getElementById('authError');
+    
+    let selectedRole = null;
+    
+    // Dark mode toggle
+    if (darkToggle) {
+      darkToggle.addEventListener('click', () => {
+        const isDark = toggleDarkMode();
+        darkToggle.textContent = isDark ? '☀️' : '🌙';
+      });
+    }
+    
+    // Open modal on sign in click
+    if (loginBtn) {
+      loginBtn.addEventListener('click', () => {
+        modal.classList.add('open');
+      });
+    }
+    
+    // Close modal
+    if (closeModal) {
+      closeModal.addEventListener('click', () => {
+        modal.classList.remove('open');
+        backToRoles();
+      });
+    }
+    
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('open');
+        backToRoles();
+      }
+    });
+    
+    window.selectRole = (role) => {
+      selectedRole = role;
+      roleButtonsDiv.style.display = 'none';
+      loginFormContainer.style.display = 'block';
+      submitLoginBtn.className = `role-btn ${role}`;
+      submitLoginBtn.textContent = role === 'admin' ? '👑 Admin Login' : '🏛️ Government Login';
+      authError.classList.remove('show');
+    };
+    
+    window.backToRoles = () => {
+      selectedRole = null;
+      roleButtonsDiv.style.display = 'flex';
+      loginFormContainer.style.display = 'none';
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
+      authError.classList.remove('show');
+    };
+    
+    // Email/Password login for Government/Admin
+    if (submitLoginBtn) {
+      submitLoginBtn.addEventListener('click', async () => {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        if (!email || !password) {
+          authError.textContent = '⚠️ Please enter email and password';
+          authError.classList.add('show');
+          return;
+        }
+        
+        submitLoginBtn.disabled = true;
+        submitLoginBtn.innerHTML = '<div class="spinner-sm"></div> Logging in...';
+        
+        try {
+          const user = await signInWithEmail(email, password);
+          if (user) {
+            modal.classList.remove('open');
+            backToRoles();
+          }
+        } catch (error) {
+          authError.textContent = '⚠️ Invalid email or password';
+          authError.classList.add('show');
+        } finally {
+          submitLoginBtn.disabled = false;
+          submitLoginBtn.textContent = selectedRole === 'admin' ? '👑 Admin Login' : '🏛️ Government Login';
+        }
+      });
+    }
+    
+    // Google Sign In (for citizens)
+    if (googleSignInBtn) {
+      googleSignInBtn.addEventListener('click', async () => {
+        googleSignInBtn.disabled = true;
+        googleSignInBtn.innerHTML = '<div class="spinner-sm"></div> Signing in...';
+        
+        try {
+          await signInWithGoogle();
+          modal.classList.remove('open');
+          backToRoles();
+        } catch (error) {
+          authError.textContent = '⚠️ Sign in failed. Please try again.';
+          authError.classList.add('show');
+        } finally {
+          googleSignInBtn.disabled = false;
+          googleSignInBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"> 🧑 Citizen - Sign in with Google';
+        }
+      });
+    }
+    
+    // Sign out
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        await signOutUser();
+      });
+    }
+    
+    // Hero Report button - check auth first
+    if (heroReportBtn) {
+      heroReportBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        initAuth((user) => {
+          if (user) {
+            window.location.href = 'pages/report.html';
+          } else {
+            modal.classList.add('open');
+          }
+        });
+      });
+    }
+    
+    // Load dashboard stats
+    async function loadStats() {
+      try {
+        const { fetchReports } = await import('./js/reports.js');
+        const reports = await fetchReports();
+        document.getElementById('totalReports').textContent = reports.length;
+        document.getElementById('resolvedCount').textContent = reports.filter(r => r.status === 'resolved').length;
+        document.getElementById('activeCount').textContent = reports.filter(r => r.status === 'active').length;
+      } catch (error) {
+        console.error('Error loading stats:', error);
+        // Set default values if error
+        document.getElementById('totalReports').textContent = '0';
+        document.getElementById('resolvedCount').textContent = '0';
+        document.getElementById('activeCount').textContent = '0';
+      }
+    }
+    
+    // Render issue types
+    function renderIssueTypes() {
+      const grid = document.getElementById('issueTypesGrid');
+      if (!grid) return;
+      const ISSUE_TYPES = {
+        garbage: { icon: '🗑️', label: 'Garbage Dump' },
+        waterlogging: { icon: '💧', label: 'Waterlogging' },
+        smell: { icon: '😷', label: 'Bad Smell' },
+        air: { icon: '🌫️', label: 'Air Pollution' },
+        drainage: { icon: '🚰', label: 'Open Drainage' },
+        road: { icon: '⚠️', label: 'Unsafe Road' },
+        smoke: { icon: '🏭', label: 'Smoke Pollution' }
+      };
+      grid.innerHTML = Object.entries(ISSUE_TYPES).map(([key, cfg]) => `
+        <div class="issue-type-card" onclick="window.location.href='pages/map.html?type=${key}'">
+          <span class="issue-type-icon">${cfg.icon}</span>
+          <div class="issue-type-label">${cfg.label}</div>
+        </div>
+      `).join('');
+    }
+    
+    // Load recent reports
+    async function loadRecentReports() {
+      const grid = document.getElementById('recentReportsGrid');
+      if (!grid) return;
+      try {
+        const { fetchReports } = await import('./js/reports.js');
+        const reports = await fetchReports();
+        const recent = reports.slice(0, 3);
+        if (recent.length === 0) {
+          grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;text-align:center">No reports yet</div>';
+          return;
+        }
+        grid.innerHTML = recent.map(r => `
+          <div class="report-card" onclick="window.location.href='pages/map.html?reportId=${r.id}'">
+            <div class="report-card-body">
+              <div class="report-card-header"><span class="badge badge-type">${r.type || 'Issue'}</span></div>
+              <p class="report-card-desc">${r.description?.substring(0, 100) || ''}</p>
+              <div class="report-card-footer"><span>📍 ${r.location?.address || 'Unknown'}</span></div>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading recent reports:', error);
+      }
+    }
+    
+    renderIssueTypes();
+    loadStats();
+    loadRecentReports();
+    
+    // Update UI based on auth state
+    initAuth((user) => {
+      if (user) {
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'flex';
+      } else {
+        if (loginBtn) loginBtn.style.display = 'flex';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+      }
+    });
+  </script>
+</body>
 </html>
