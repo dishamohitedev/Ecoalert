@@ -1,5 +1,5 @@
 // ============================================================
-// EcoAlert - Reports Database Module
+// EcoAlert - Reports Database Module (FIXED: Dummy data always available)
 // ============================================================
 
 import { db, auth, collection, addDoc, getDocs, getDoc, doc, updateDoc,
@@ -62,12 +62,10 @@ export async function submitReport(reportData, imageFile) {
 }
 
 // ─── Get All Reports (Live) ─────────────────────────────────
-// Simple single-field query — no composite index needed.
-// Sort is done client-side.
 export function listenToReports(callback) {
   if (!IS_FIREBASE_CONFIGURED) {
-    console.warn('⚠️ Firebase not configured — using dummy reports');
-    callback(DUMMY_REPORTS);
+    console.log('⚠️ Firebase not configured — using dummy reports:', DUMMY_REPORTS.length);
+    callback([...DUMMY_REPORTS]);
     return () => {};
   }
 
@@ -81,7 +79,6 @@ export function listenToReports(callback) {
   return onSnapshot(q, (snapshot) => {
     const reports = snapshot.docs.map(d => {
       const data = d.data();
-      console.log(`  📄 Doc ${d.id}: location=`, data.location, 'type=', data.type);
       return { id: d.id, ...data };
     });
 
@@ -92,27 +89,33 @@ export function listenToReports(callback) {
       return bTime - aTime;
     });
 
-    console.log(`✅ Firestore returned ${reports.length} reports:`, reports);
-    callback(reports);
+    console.log(`✅ Firestore returned ${reports.length} reports`);
+    
+    // Merge with dummy data if needed (for demo)
+    if (reports.length === 0) {
+      callback([...DUMMY_REPORTS]);
+    } else {
+      callback(reports);
+    }
 
   }, (error) => {
     console.error('❌ Firestore onSnapshot error:', error.code, error.message);
-
+    
     if (error.code === 'permission-denied') {
       console.error('Fix: Go to Firebase Console → Firestore → Rules and allow reads.');
-      showToast('Firestore rules blocking reads — check console', 'error', 8000);
+      showToast('Firestore rules blocking reads — using demo data', 'warning', 5000);
     } else {
       showToast('Firestore error: ' + error.message, 'error', 8000);
     }
 
     // Fall back to dummy data so map isn't blank
-    callback(DUMMY_REPORTS);
+    callback([...DUMMY_REPORTS]);
   });
 }
 
 // ─── Get All Reports (One-time) ─────────────────────────────
 export async function fetchReports(filters = {}) {
-  if (!IS_FIREBASE_CONFIGURED) return DUMMY_REPORTS;
+  if (!IS_FIREBASE_CONFIGURED) return [...DUMMY_REPORTS];
 
   try {
     const q = query(
@@ -127,10 +130,10 @@ export async function fetchReports(filters = {}) {
     if (filters.severity) reports = reports.filter(r => r.severity === filters.severity);
     if (filters.status) reports = reports.filter(r => r.status === filters.status);
 
-    return reports;
+    return reports.length > 0 ? reports : [...DUMMY_REPORTS];
   } catch (error) {
     console.warn('fetchReports failed:', error);
-    return DUMMY_REPORTS;
+    return [...DUMMY_REPORTS];
   }
 }
 

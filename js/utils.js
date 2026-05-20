@@ -1,5 +1,5 @@
 // ============================================================
-// EcoAlert - Utilities Module
+// EcoAlert - Utilities Module (FIXED: All dummy reports included)
 // ============================================================
 
 // ─── Issue Types Config ───────────────────────────────────────
@@ -26,7 +26,7 @@ export const STATUS_TYPES = {
   resolved:    { label: 'Resolved',    color: '#4CAF50', icon: '🟢' }
 };
 
-// ─── Sample Dummy Data ────────────────────────────────────────
+// ─── Sample Dummy Data (ALL 6 reports included properly) ───
 export const DUMMY_REPORTS = [
   {
     id: 'demo_1',
@@ -34,11 +34,11 @@ export const DUMMY_REPORTS = [
     userName: 'Priya Sharma',
     userPhotoURL: '',
     type: 'garbage',
-    description: 'Large illegal dumping site near the main road. Multiple bags of household waste piled up.',
+    description: 'Large illegal dumping site near the main road. Multiple bags of household waste piled up for weeks. This is causing a bad smell and attracting stray animals.',
     severity: 'high',
     status: 'active',
     imageURL: 'https://images.unsplash.com/photo-1604187351574-c75ca79f5807?w=400&q=80',
-    location: { lat: 19.076, lng: 72.877, address: 'Andheri East, Mumbai' },
+    location: { lat: 19.076, lng: 72.877, address: 'Andheri East, Mumbai - Near Marol Metro Station' },
     upvotes: 14,
     upvotedBy: [],
     createdAt: { toDate: () => new Date(Date.now() - 3600000 * 5) },
@@ -50,11 +50,11 @@ export const DUMMY_REPORTS = [
     userName: 'Rohan Mehta',
     userPhotoURL: '',
     type: 'waterlogging',
-    description: 'Severe waterlogging after rain. Road completely flooded, vehicles stuck.',
+    description: 'Severe waterlogging after rain. Road completely flooded for 2 days. Vehicles stuck and residents unable to leave homes. Urgent attention needed.',
     severity: 'critical',
     status: 'in-progress',
     imageURL: 'https://images.unsplash.com/photo-1547683905-f686c993aae5?w=400&q=80',
-    location: { lat: 19.082, lng: 72.868, address: 'Kurla West, Mumbai' },
+    location: { lat: 19.082, lng: 72.868, address: 'Kurla West, Mumbai - Near LBS Marg' },
     upvotes: 32,
     upvotedBy: [],
     createdAt: { toDate: () => new Date(Date.now() - 3600000 * 12) },
@@ -66,11 +66,11 @@ export const DUMMY_REPORTS = [
     userName: 'Aisha Khan',
     userPhotoURL: '',
     type: 'air',
-    description: 'Factory nearby releasing black smoke. Visibility reduced. Strong chemical odor.',
+    description: 'Factory nearby releasing black smoke throughout the day. Visibility reduced in the area. Residents experiencing breathing difficulties and burning sensation in eyes.',
     severity: 'critical',
     status: 'active',
     imageURL: 'https://images.unsplash.com/photo-1611270629569-8b357cb88da9?w=400&q=80',
-    location: { lat: 19.065, lng: 72.900, address: 'Chembur, Mumbai' },
+    location: { lat: 19.065, lng: 72.900, address: 'Chembur, Mumbai - Near RCF Colony' },
     upvotes: 28,
     upvotedBy: [],
     createdAt: { toDate: () => new Date(Date.now() - 3600000 * 2) },
@@ -82,11 +82,11 @@ export const DUMMY_REPORTS = [
     userName: 'Vikram Patel',
     userPhotoURL: '',
     type: 'road',
-    description: 'Huge pothole in the middle of the road. Multiple accidents reported.',
+    description: 'Huge pothole in the middle of the road. Multiple two-wheeler accidents reported this week. Very dangerous during night time.',
     severity: 'high',
     status: 'active',
     imageURL: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
-    location: { lat: 19.095, lng: 72.855, address: 'Bandra West, Mumbai' },
+    location: { lat: 19.095, lng: 72.855, address: 'Bandra West, Mumbai - Near Linking Road' },
     upvotes: 19,
     upvotedBy: [],
     createdAt: { toDate: () => new Date(Date.now() - 3600000 * 8) },
@@ -98,11 +98,11 @@ export const DUMMY_REPORTS = [
     userName: 'Sneha Joshi',
     userPhotoURL: '',
     type: 'drainage',
-    description: 'Open drainage with overflowing sewage. Health hazard for nearby residents.',
+    description: 'Open drainage with overflowing sewage on the footpath. Health hazard for pedestrians and nearby residents. Very foul smell spreading in the area.',
     severity: 'high',
     status: 'resolved',
     imageURL: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400&q=80',
-    location: { lat: 19.058, lng: 72.835, address: 'Dharavi, Mumbai' },
+    location: { lat: 19.058, lng: 72.835, address: 'Dharavi, Mumbai - Near Kumbharwada' },
     upvotes: 7,
     upvotedBy: [],
     createdAt: { toDate: () => new Date(Date.now() - 3600000 * 48) },
@@ -114,11 +114,11 @@ export const DUMMY_REPORTS = [
     userName: 'Arjun Reddy',
     userPhotoURL: '',
     type: 'smoke',
-    description: 'Burning of plastic waste in open ground. Toxic fumes spreading in the area.',
+    description: 'Burning of plastic waste in open ground every evening. Toxic fumes spreading in the residential area. Causing severe respiratory issues for children and elderly.',
     severity: 'medium',
     status: 'active',
     imageURL: 'https://images.unsplash.com/photo-1569163139599-0f4517e36f51?w=400&q=80',
-    location: { lat: 19.110, lng: 72.890, address: 'Malad East, Mumbai' },
+    location: { lat: 19.110, lng: 72.890, address: 'Malad East, Mumbai - Near Dindoshi' },
     upvotes: 11,
     upvotedBy: [],
     createdAt: { toDate: () => new Date(Date.now() - 3600000 * 1) },

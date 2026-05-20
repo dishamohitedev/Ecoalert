@@ -1,5 +1,5 @@
 // ============================================================
-// EcoAlert - Map Module (Leaflet.js + OpenStreetMap)
+// EcoAlert - Map Module (With Clear Nearby function)
 // ============================================================
 
 import { ISSUE_TYPES, SEVERITY_LEVELS, STATUS_TYPES, timeAgo, getDistance, showToast } from './utils.js';
@@ -8,6 +8,8 @@ let map = null;
 let markers = [];
 let heatLayer = null;
 let userMarker = null;
+let nearbyHighlightLayer = null;
+let nearbyCircles = [];
 
 // ─── Initialize Map ───────────────────────────────────────────
 export function initMap(containerId, options = {}) {
@@ -32,10 +34,10 @@ export function initMap(containerId, options = {}) {
 export function getMap() { return map; }
 
 // ─── Render Report Markers ────────────────────────────────────
-export function renderMarkers(reports, filters = {}, onMarkerClick) {
+export function renderMarkers(reports, filters = {}, onMarkerClick, highlightReportIds = []) {
   clearMarkers();
 
-  console.log(`🗺️ renderMarkers called with ${reports.length} total reports, filters:`, filters);
+  console.log(`🗺️ renderMarkers called with ${reports.length} total reports, highlight:`, highlightReportIds);
 
   const filtered = reports.filter(r => {
     if (filters.type && r.type !== filters.type) return false;
@@ -50,7 +52,6 @@ export function renderMarkers(reports, filters = {}, onMarkerClick) {
   let skipped = 0;
 
   filtered.forEach(report => {
-    // ── FIXED: original used !lat which skips lat=0; use explicit null/undefined check ──
     const lat = report.location?.lat;
     const lng = report.location?.lng;
 
@@ -60,17 +61,28 @@ export function renderMarkers(reports, filters = {}, onMarkerClick) {
       return;
     }
 
-    console.log(`📍 Placing marker for report ${report.id} at [${lat}, ${lng}]`);
-    const marker = createReportMarker(report, onMarkerClick);
+    const isHighlighted = highlightReportIds.includes(report.id);
+    
+    console.log(`📍 Placing marker for report ${report.id} at [${lat}, ${lng}], highlighted: ${isHighlighted}`);
+    const marker = createReportMarker(report, onMarkerClick, isHighlighted);
     if (marker) { markers.push(marker); placed++; }
   });
 
   console.log(`✅ Placed ${placed} markers, skipped ${skipped}`);
+  
+  if (highlightReportIds.length > 0 && markers.length > 0) {
+    const highlightedMarkers = markers.filter(m => m.options.highlighted);
+    if (highlightedMarkers.length > 0) {
+      const group = L.featureGroup(highlightedMarkers);
+      map.fitBounds(group.getBounds().pad(0.2));
+    }
+  }
+  
   return filtered.length;
 }
 
 // ─── Create Single Marker ─────────────────────────────────────
-function createReportMarker(report, onMarkerClick) {
+function createReportMarker(report, onMarkerClick, isHighlighted = false) {
   try {
     const cfg = ISSUE_TYPES[report.type] || ISSUE_TYPES.garbage;
     const sev = SEVERITY_LEVELS[report.severity] || SEVERITY_LEVELS.medium;
@@ -84,20 +96,30 @@ function createReportMarker(report, onMarkerClick) {
       return null;
     }
 
-    const icon = L.divIcon({
-      html: `<div class="map-marker-wrap">
+    let iconHtml;
+    if (isHighlighted) {
+      iconHtml = `<div class="map-marker-wrap">
+        <div class="map-marker-pin" style="background:${cfg.markerColor};border:3px solid #FF9800;box-shadow:0 0 0 3px rgba(255,152,0,0.5);">
+          <span>${cfg.icon}</span>
+        </div>
+      </div>`;
+    } else {
+      iconHtml = `<div class="map-marker-wrap">
         <div class="map-marker-pin" style="background:${cfg.markerColor};border:3px solid ${sev.color};">
           <span>${cfg.icon}</span>
         </div>
-        <div class="map-marker-pulse" style="background:${cfg.markerColor}40;"></div>
-      </div>`,
+      </div>`;
+    }
+
+    const icon = L.divIcon({
+      html: iconHtml,
       className: '',
       iconSize: [44, 44],
       iconAnchor: [22, 44],
       popupAnchor: [0, -46]
     });
 
-    const marker = L.marker([lat, lng], { icon }).addTo(map);
+    const marker = L.marker([lat, lng], { icon, highlighted: isHighlighted }).addTo(map);
     const popup = buildPopupHTML(report, cfg, sev, sta);
     marker.bindPopup(popup, { maxWidth: 320, className: 'eco-popup' });
 
@@ -127,7 +149,7 @@ function buildPopupHTML(report, cfg, sev, sta) {
         </span>
         <span class="popup-status-badge" style="color:${sta.color}">${sta.icon} ${sta.label}</span>
       </div>
-      <p class="popup-description">${report.description}</p>
+      <p class="popup-description">${report.description || 'No description provided'}</p>
       <div class="popup-meta">
         <span class="popup-severity" style="background:${sev.bg};color:${sev.color}">
           ⚡ ${sev.label} Severity
@@ -135,7 +157,7 @@ function buildPopupHTML(report, cfg, sev, sta) {
         <span class="popup-votes">👍 ${report.upvotes || 0}</span>
       </div>
       <div class="popup-footer">
-        <span class="popup-location">📍 ${report.location.address || 'Unknown location'}</span>
+        <span class="popup-location">📍 ${report.location?.address || 'Unknown location'}</span>
         <span class="popup-time">🕐 ${timeAgo(report.createdAt)}</span>
       </div>
       <div class="popup-reporter">By ${report.userName || 'Anonymous'}</div>
@@ -148,28 +170,63 @@ export function clearMarkers() {
   markers = [];
 }
 
-// ─── Toggle Heatmap ───────────────────────────────────────────
+// ─── Toggle Heatmap ──────────────────────────────────────────
 export function toggleHeatmap(reports, enabled) {
   if (!map) return;
-  if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
-  if (!enabled) return;
+  
+  if (heatLayer) { 
+    map.removeLayer(heatLayer); 
+    heatLayer = null; 
+  }
+  
+  if (!enabled) {
+    console.log('🔥 Heatmap disabled');
+    return;
+  }
 
   if (!window.L.heatLayer) {
+    console.error('Leaflet.heat plugin not loaded');
     showToast('Heatmap plugin not loaded', 'warning');
     return;
   }
 
-  const points = reports
-    .filter(r => r.location?.lat != null && !isNaN(r.location.lat))
-    .map(r => {
-      const sevWeight = { low: 0.3, medium: 0.6, high: 0.8, critical: 1.0 };
-      return [parseFloat(r.location.lat), parseFloat(r.location.lng), sevWeight[r.severity] || 0.5];
-    });
+  const points = [];
+  reports.forEach(r => {
+    if (r.location?.lat != null && !isNaN(r.location.lat) && r.location.lng != null && !isNaN(r.location.lng)) {
+      let weight = 0.5;
+      switch(r.severity) {
+        case 'low': weight = 0.6; break;
+        case 'medium': weight = 0.8; break;
+        case 'high': weight = 1.2; break;
+        case 'critical': weight = 1.8; break;
+        default: weight = 0.7;
+      }
+      points.push([parseFloat(r.location.lat), parseFloat(r.location.lng), weight]);
+    }
+  });
 
+  if (points.length === 0) {
+    showToast('No reports to display heatmap', 'info');
+    return;
+  }
+
+  console.log(`🔥 Creating heatmap with ${points.length} points`);
+  
   heatLayer = L.heatLayer(points, {
-    radius: 30, blur: 20, maxZoom: 17,
-    gradient: { 0.2: '#4CAF50', 0.5: '#FF9800', 0.8: '#F44336', 1.0: '#B71C1C' }
+    radius: 40,
+    blur: 30,
+    maxZoom: 18,
+    minOpacity: 0.5,
+    gradient: { 
+      0.2: '#FFEB3B',
+      0.4: '#FFC107',
+      0.6: '#FF9800',
+      0.8: '#FF5722',
+      1.0: '#F44336'
+    }
   }).addTo(map);
+  
+  showToast('Heatmap active - Yellow→Orange→Red shows pollution intensity', 'info', 3000);
 }
 
 // ─── Show User Location ───────────────────────────────────────
@@ -196,11 +253,59 @@ export function panTo(lat, lng, zoom = 15) {
 
 // ─── Check Nearby Alerts ─────────────────────────────────────
 export function checkNearbyAlerts(reports, userLat, userLng, radiusMeters = 1000) {
-  return reports.filter(r => {
+  const nearby = reports.filter(r => {
     if (r.location?.lat == null || r.status === 'resolved') return false;
     const dist = getDistance(userLat, userLng, r.location.lat, r.location.lng);
     return dist <= radiusMeters;
   });
+  
+  console.log(`📍 Found ${nearby.length} nearby alerts`);
+  return nearby;
+}
+
+// ─── Highlight Nearby Reports ─────────────────────────────────
+export function highlightNearbyReports(reports, nearbyReportIds) {
+  if (!map) return;
+  
+  console.log(`🌟 Highlighting ${nearbyReportIds.length} nearby reports`);
+  
+  nearbyCircles.forEach(circle => map.removeLayer(circle));
+  nearbyCircles = [];
+  
+  if (nearbyReportIds.length === 0) return;
+  
+  reports.forEach(report => {
+    if (nearbyReportIds.includes(report.id) && report.location?.lat) {
+      const circle = L.circle([report.location.lat, report.location.lng], {
+        radius: 200,
+        color: '#FF9800',
+        fillColor: '#FF9800',
+        fillOpacity: 0.2,
+        weight: 3
+      }).addTo(map);
+      nearbyCircles.push(circle);
+    }
+  });
+  
+  if (nearbyReportIds.length > 0) {
+    const bounds = [];
+    reports.forEach(report => {
+      if (nearbyReportIds.includes(report.id) && report.location?.lat) {
+        bounds.push([report.location.lat, report.location.lng]);
+      }
+    });
+    if (bounds.length > 0) {
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }
+}
+
+// ─── Clear Nearby Highlights (TURN OFF NEARBY) ────────────────
+export function clearNearbyHighlights() {
+  console.log('🧹 Clearing all nearby highlights');
+  nearbyCircles.forEach(circle => map.removeLayer(circle));
+  nearbyCircles = [];
+  return true;
 }
 
 // ─── Enable Click-to-Report ───────────────────────────────────

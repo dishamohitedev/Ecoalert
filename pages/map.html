@@ -78,13 +78,14 @@
         <div class="map-tools">
           <button class="map-tool-btn" id="locateMe" title="Find my location">📍 Locate Me</button>
           <button class="map-tool-btn" id="toggleHeatmap" title="Toggle heatmap">🔥 Heatmap</button>
-          <button class="map-tool-btn" id="nearbyAlerts" title="Check nearby alerts">🔔 Nearby</button>
+          <button class="map-tool-btn" id="toggleNearby" title="Toggle nearby alerts">🔔 Nearby</button>
         </div>
       </div>
 
       <div class="sidebar-section sidebar-reports">
-        <div class="sidebar-section-title flex justify-between items-center">
-          <span>Reports <span class="report-count-badge" id="reportCountBadge">0</span></span>
+        <div class="sidebar-section-title">
+          <span>📋 Reports</span>
+          <span class="report-count-badge" id="reportCountBadge">0</span>
         </div>
         <div class="sidebar-report-list" id="sidebarReportList">
           <div class="loading-centered"><div class="spinner"></div></div>
@@ -104,7 +105,7 @@
       <div class="nearby-banner" id="nearbyBanner" style="display:none">
         <span class="nearby-icon">⚠️</span>
         <span id="nearbyBannerText">Loading nearby alerts...</span>
-        <button class="nearby-close" onclick="document.getElementById('nearbyBanner').style.display='none'">✕</button>
+        <button class="nearby-close" id="closeNearbyBanner">✕</button>
       </div>
     </div>
   </div>
